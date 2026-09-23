@@ -168,11 +168,16 @@
 
                 <!-- 7. Submitted Source Code -->
                 <div class="mb-4">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
                         <h5 class="fw-bold text-light mb-0">Submitted Source Code</h5>
-                        <button type="button" class="btn btn-outline-secondary btn-sm px-3" id="copy-code-btn" onclick="copySubmittedCode()">
-                            Copy Code
-                        </button>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-outline-secondary btn-sm px-3" id="copy-code-btn" onclick="copySubmittedCode()">
+                                <i class="bi bi-clipboard me-1"></i>Copy Code
+                            </button>
+                            <button type="button" class="btn btn-outline-info btn-sm px-3" id="download-code-btn" onclick="downloadSubmittedCode()">
+                                <i class="bi bi-download me-1"></i>Download Solution
+                            </button>
+                        </div>
                     </div>
                     <pre class="code-view" id="res-source-code">Loading source code...</pre>
                 </div>
@@ -222,6 +227,9 @@
                         </a>
                         <a href="/coding/setup/" class="btn btn-outline-warning btn-sm px-3" id="res-retake-btn">
                             &#8634; Try Another Problem
+                        </a>
+                        <a href="#" class="btn btn-warning btn-sm px-3 text-dark fw-semibold" id="res-practice-again-btn">
+                            <i class="bi bi-arrow-repeat me-1"></i>Practice Again
                         </a>
                     </div>
                     <div class="d-flex align-items-center gap-2">
@@ -370,10 +378,23 @@ async function loadResult() {
     }
 }
 
+let currentResultData = null;
+
 function renderResultUI(data) {
+    currentResultData = data;
     const subStatus = data.submission_status || 'PENDING';
     const cfg = STATUS_CONFIG[subStatus] || STATUS_CONFIG['PENDING'];
     const q = data.question || {};
+
+    // Practice Again CTA
+    const practiceBtn = document.getElementById('res-practice-again-btn');
+    if (practiceBtn) {
+        if (q && q.id) {
+            practiceBtn.href = `/coding/setup/?problem_id=${q.id}`;
+        } else {
+            practiceBtn.href = '/coding/setup/';
+        }
+    }
 
     // 1. Header Information
     document.getElementById('res-problem-title').textContent = q.title || 'Coding Problem';
@@ -498,6 +519,26 @@ function copySubmittedCode() {
             btn.classList.add('btn-outline-secondary');
         }, 2000);
     });
+}
+
+function downloadSubmittedCode() {
+    const code = document.getElementById('res-source-code').textContent;
+    let ext = 'py';
+    const lang = (currentResultData && currentResultData.language ? currentResultData.language.toLowerCase() : '');
+    if (lang.includes('python')) ext = 'py';
+    else if (lang.includes('java')) ext = 'java';
+    else if (lang.includes('c++') || lang.includes('cpp')) ext = 'cpp';
+    else if (lang.includes('c')) ext = 'c';
+
+    const filename = `solution_${ATTEMPT_ID || 'code'}.${ext}`;
+    const blob = new Blob([code], { type: 'text/plain;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
 }
 
 document.addEventListener('DOMContentLoaded', loadResult);

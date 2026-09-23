@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}403 — Access Denied | SKILLBYTE{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-8 col-lg-6 text-center">
+        <div class="card shadow-lg border-0 bg-glass text-light p-4 p-md-5">
+            <div class="display-1 fw-bold text-danger font-monospace mb-2">403</div>
+            <div class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-3 py-2 fs-6 mb-3 align-self-center">
+                Access Denied
+            </div>
+            <h3 class="fw-bold mb-2">Insufficient Permissions</h3>
+            <p class="text-secondary small mb-4">
+                You do not have administrative or authorization privileges to access this area of the SKILLBYTE platform.
+            </p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <a href="/dashboard/" class="btn btn-primary px-4 fw-semibold">
+                    <i class="bi bi-house-door me-1"></i>Return to Dashboard
+                </a>
+                <a href="/login/" class="btn btn-outline-warning px-4">
+                    Switch Account
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

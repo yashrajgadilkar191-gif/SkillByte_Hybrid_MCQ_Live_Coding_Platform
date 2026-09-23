@@ -31,13 +31,20 @@
                 <span class="navbar-text text-muted small d-none d-md-inline">
                     Where Theory Meets Practice
                 </span>
-                <div class="ms-auto d-flex align-items-center gap-3">
-                    <span id="api-status-badge" class="badge rounded-pill bg-secondary d-flex align-items-center gap-1">
-                        <span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true" style="width: 0.5rem; height: 0.5rem;"></span>
-                        <span id="api-status-text">Checking API...</span>
-                    </span>
-                    <div id="navbar-auth-links"></div>
-                    <a href="/admin/" class="btn btn-outline-light btn-sm" target="_blank">Django Admin</a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMainCollapse" aria-controls="navbarMainCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarMainCollapse">
+                    <div class="ms-auto d-flex align-items-lg-center align-items-start gap-3 flex-column flex-lg-row pt-3 pt-lg-0">
+                        <span id="api-status-badge" class="badge rounded-pill bg-secondary d-flex align-items-center gap-1">
+                            <span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true" style="width: 0.5rem; height: 0.5rem;"></span>
+                            <span id="api-status-text">Checking API...</span>
+                        </span>
+                        <div id="navbar-auth-links"></div>
+                        <a href="/admin/" class="btn btn-outline-light btn-sm" target="_blank">Django Admin</a>
+                    </div>
                 </div>
             </div>
         </nav>

@@ -41,6 +41,13 @@ const Auth = {
         this.updateNavUI();
     },
 
+    setUser(user) {
+        if (user) {
+            localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+            this.updateNavUI();
+        }
+    },
+
     setGuestMode() {
         this.clearSession();
         localStorage.setItem(this.IS_GUEST_KEY, 'true');
@@ -140,18 +147,17 @@ const Auth = {
         if (this.isLoggedIn()) {
             const user = this.getUser();
             const roleBadgeClass = user?.role === 'ADMIN' ? 'bg-danger' : 'bg-primary';
-            const adminLink = user?.role === 'ADMIN' ? `<a href="/admin/questions/" class="btn btn-outline-warning btn-sm"><i class="bi bi-shield-lock-fill me-1"></i>Question Bank</a>` : '';
             const adminLinks = user?.role === 'ADMIN' ? `
                 <a href="/admin/questions/" class="btn btn-outline-warning btn-sm"><i class="bi bi-shield-lock-fill me-1"></i>Question Bank</a>
                 <a href="/admin/analytics/" class="btn btn-outline-info btn-sm"><i class="bi bi-graph-up me-1"></i>Analytics</a>
             ` : '';
             authNav.innerHTML = `
-                <div class="d-flex align-items-center gap-2">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
                     <span class="text-light small">Hello, <strong>${escapeHtml(user?.name || 'User')}</strong></span>
                     <span class="badge ${roleBadgeClass} small">${escapeHtml(user?.role || 'STUDENT')}</span>
-                    ${adminLink}
                     ${adminLinks}
                     <a href="/dashboard/" class="btn btn-outline-info btn-sm">Dashboard</a>
+                    <a href="/profile/" class="btn btn-outline-light btn-sm"><i class="bi bi-person-circle me-1"></i>Profile</a>
                     <a href="/leaderboard/" class="btn btn-outline-warning btn-sm"><i class="bi bi-trophy-fill me-1"></i>Leaderboard</a>
                     <a href="/attempts/" class="btn btn-outline-light btn-sm">My Attempts</a>
                     <button class="btn btn-outline-danger btn-sm" onclick="Auth.logout()">Logout</button>

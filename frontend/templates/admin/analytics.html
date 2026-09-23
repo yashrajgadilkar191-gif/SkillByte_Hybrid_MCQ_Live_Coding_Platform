@@ -79,7 +79,10 @@
                         Real-time student diagnostic metrics, completion funnels, and assessment difficulty analysis.
                     </p>
                 </div>
-                <div class="d-flex align-items-center gap-2">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <button class="btn btn-outline-success btn-sm" onclick="exportAnalyticsCSV()" id="export-csv-btn">
+                        <i class="bi bi-file-earmark-arrow-down me-1"></i>Export Attempts (CSV)
+                    </button>
                     <a href="/admin/questions/" class="btn btn-outline-warning btn-sm">
                         <i class="bi bi-shield-lock me-1"></i>Question Bank
                     </a>
@@ -451,6 +454,35 @@
                     <td class="text-end pe-3 font-monospace text-warning">${q.average_score_percent}%</td>
                 </tr>
             `).join('');
+        }
+    }
+
+    async function exportAnalyticsCSV() {
+        const btn = document.getElementById('export-csv-btn');
+        const originalText = btn.innerHTML;
+        try {
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Exporting...';
+            btn.disabled = true;
+            const res = await (window.Auth ? Auth.fetchWithAuth('/api/admin/analytics/export/?format=csv') : fetch('/api/admin/analytics/export/?format=csv'));
+            if (!res.ok) {
+                throw new Error(`Export failed (HTTP ${res.status})`);
+            }
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            const dateStr = new Date().toISOString().slice(0, 10);
+            a.download = `skillbyte_assessment_report_${dateStr}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } catch (e) {
+            alert("Failed to export analytics: " + e.message);
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
         }
     }
 </script>

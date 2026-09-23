@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}500 — Server Error | SKILLBYTE{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-8 col-lg-6 text-center">
+        <div class="card shadow-lg border-0 bg-glass text-light p-4 p-md-5">
+            <div class="display-1 fw-bold text-warning font-monospace mb-2">500</div>
+            <div class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 px-3 py-2 fs-6 mb-3 align-self-center">
+                Internal Server Error
+            </div>
+            <h3 class="fw-bold mb-2">Something Went Awry</h3>
+            <p class="text-secondary small mb-4">
+                The server encountered an unexpected situation while processing your request. Our platform engineers have been notified.
+            </p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <a href="/dashboard/" class="btn btn-primary px-4 fw-semibold">
+                    <i class="bi bi-house-door me-1"></i>Return to Dashboard
+                </a>
+                <button type="button" class="btn btn-outline-light px-4" onclick="location.reload()">
+                    Retry Action
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

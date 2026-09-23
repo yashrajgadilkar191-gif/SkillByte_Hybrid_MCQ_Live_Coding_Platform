@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}404 — Page Not Found | SKILLBYTE{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-8 col-lg-6 text-center">
+        <div class="card shadow-lg border-0 bg-glass text-light p-4 p-md-5">
+            <div class="display-1 fw-bold text-info font-monospace mb-2">404</div>
+            <div class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 px-3 py-2 fs-6 mb-3 align-self-center">
+                Page Not Found
+            </div>
+            <h3 class="fw-bold mb-2">Lost in the Byte Code?</h3>
+            <p class="text-secondary small mb-4">
+                The resource or endpoint you requested could not be located on the SKILLBYTE server. It may have been moved, renamed, or never existed.
+            </p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <a href="/dashboard/" class="btn btn-primary px-4 fw-semibold">
+                    <i class="bi bi-house-door me-1"></i>Go to Dashboard
+                </a>
+                <a href="/" class="btn btn-outline-light px-4">
+                    Home Page
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -149,6 +149,7 @@
                             <option value="">All Statuses</option>
                             <option value="COMPLETED">Completed Only</option>
                             <option value="IN_PROGRESS">In Progress Only</option>
+                            <option value="ABANDONED">Abandoned Only</option>
                         </select>
                     </div>
                 </div>
@@ -376,6 +377,7 @@ async function loadAttempts() {
 function renderAttemptRow(att) {
     const isCode = att.question_type === 'CODE';
     const isCompleted = att.status === 'COMPLETED';
+    const isAbandoned = att.status === 'ABANDONED';
     
     // Type Badge
     const typeBadge = isCode
@@ -383,9 +385,14 @@ function renderAttemptRow(att) {
         : `<span class="badge bg-primary-subtle text-primary border border-primary px-2 py-1">MCQ</span>`;
 
     // Status Badge
-    const statusBadge = isCompleted
-        ? `<span class="badge bg-success-subtle text-success border border-success">COMPLETED</span>`
-        : `<span class="badge bg-warning-subtle text-warning border border-warning">IN PROGRESS</span>`;
+    let statusBadge = '';
+    if (isCompleted) {
+        statusBadge = `<span class="badge bg-success-subtle text-success border border-success">COMPLETED</span>`;
+    } else if (isAbandoned) {
+        statusBadge = `<span class="badge bg-secondary-subtle text-secondary border border-secondary">ABANDONED</span>`;
+    } else {
+        statusBadge = `<span class="badge bg-warning-subtle text-warning border border-warning">IN PROGRESS</span>`;
+    }
 
     // Difficulty Badge
     let diffColor = 'bg-secondary';
@@ -406,14 +413,21 @@ function renderAttemptRow(att) {
 
     // Action button
     let actionBtn = '';
-    if (isCode) {
-        actionBtn = isCompleted
-            ? `<a href="/coding/result/${att.attempt_id}/" class="btn btn-outline-info btn-sm py-1 px-3">View Result</a>`
-            : `<a href="/coding/assessment/${att.attempt_id}/" class="btn btn-warning btn-sm py-1 px-3 text-dark fw-semibold">Resume</a>`;
+    if (isCompleted) {
+        const resUrl = isCode ? `/coding/result/${att.attempt_id}/` : `/assessments/mcq/${att.attempt_id}/result/`;
+        actionBtn = `<a href="${resUrl}" class="btn btn-outline-info btn-sm py-1 px-3">View Result</a>`;
+    } else if (isAbandoned) {
+        actionBtn = `<span class="badge bg-dark text-muted py-1 px-2 border border-secondary">Abandoned</span>`;
     } else {
-        actionBtn = isCompleted
-            ? `<a href="/assessments/mcq/${att.attempt_id}/result/" class="btn btn-outline-info btn-sm py-1 px-3">View Result</a>`
-            : `<a href="/assessments/mcq/${att.attempt_id}/" class="btn btn-primary btn-sm py-1 px-3 fw-semibold">Resume</a>`;
+        const resumeUrl = isCode ? `/coding/assessment/${att.attempt_id}/` : `/assessments/mcq/${att.attempt_id}/`;
+        actionBtn = `
+            <div class="d-flex justify-content-end gap-1">
+                <a href="${resumeUrl}" class="btn btn-warning btn-sm py-1 px-2 text-dark fw-semibold">Resume</a>
+                <button class="btn btn-outline-danger btn-sm py-1 px-2" onclick="abandonAttempt(${att.attempt_id})" title="Abandon Attempt">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/></svg>
+                </button>
+            </div>
+        `;
     }
 
     // Score display
@@ -445,6 +459,28 @@ function renderAttemptRow(att) {
             </td>
         </tr>
     `;
+}
+
+async function abandonAttempt(attemptId) {
+    if (!confirm(`Are you sure you want to abandon assessment attempt #${attemptId}? You will not be able to resume it.`)) {
+        return;
+    }
+    try {
+        let url = `/api/assessments/${attemptId}/abandon/`;
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({})
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            alert(err.error || `Failed to abandon attempt #${attemptId}`);
+            return;
+        }
+        loadAllData();
+    } catch (e) {
+        alert("Error: " + e.message);
+    }
 }
 
 function setTypeFilter(type, btn) {

@@ -3,13 +3,16 @@ Admin Platform & Assessment Analytics Views for SKILLBYTE (Phase 10).
 Accessible strictly to users with the ADMIN role.
 """
 
+import csv
 from datetime import timedelta
+from django.http import HttpResponse
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.db.models import Avg, Count, Q
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.renderers import BaseRenderer, JSONRenderer
 
 from accounts.models import UserProfile, Role
 from accounts.permissions import IsAdmin
@@ -185,4 +188,84 @@ class AdminAnalyticsView(APIView):
             },
             "hardest_questions": hardest_questions[:5],
         }, status=status.HTTP_200_OK)
+
+
+class CSVRenderer(BaseRenderer):
+    media_type = 'text/csv'
+    format = 'csv'
+    charset = 'utf-8'
+
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        return data
+
+
+class AdminAnalyticsExportView(APIView):
+    """
+    GET /api/admin/analytics/export/?format=csv
+    Exports assessment attempts and performance diagnostics to CSV (Phase 11).
+    Strictly protected by IsAdmin.
+    """
+    permission_classes = [IsAdmin]
+    renderer_classes = [CSVRenderer, JSONRenderer]
+
+    def get(self, request):
+        format_param = request.query_params.get('format', 'csv').lower()
+        if format_param != 'csv':
+            return Response(
+                {"error": "Unsupported export format. Supported formats: csv"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        response = HttpResponse(content_type='text/csv; charset=utf-8')
+        date_str = timezone.now().strftime('%Y%m%d_%H%M%S')
+        response['Content-Disposition'] = f'attachment; filename="skillbyte_assessment_report_{date_str}.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow([
+            'Attempt ID',
+            'Student Username',
+            'Email',
+            'Assessment Type',
+            'Category',
+            'Difficulty',
+            'Score',
+            'Max Score',
+            'Percentage',
+            'Status',
+            'Started At',
+            'Submitted At',
+        ])
+
+        attempts = AssessmentAttempt.objects.select_related('user').order_by('-started_at')
+        for att in attempts:
+            res = getattr(att, 'result', None)
+            if res:
+                pct = f"{res.percentage:.1f}%"
+            elif att.max_score > 0:
+                pct = f"{(att.total_score / att.max_score * 100):.1f}%"
+            else:
+                pct = "0.0%"
+
+            username = att.user.username if att.user else (f"Guest ({att.session_id[:8]}...)" if att.session_id else "Guest")
+            email = att.user.email if att.user else "N/A"
+            started_str = att.started_at.strftime('%Y-%m-%d %H:%M:%S') if att.started_at else ""
+            submitted_str = att.submitted_at.strftime('%Y-%m-%d %H:%M:%S') if att.submitted_at else ""
+
+            writer.writerow([
+                att.id,
+                username,
+                email,
+                att.question_type,
+                att.category,
+                att.difficulty,
+                att.total_score,
+                att.max_score,
+                pct,
+                att.status,
+                started_str,
+                submitted_str,
+            ])
+
+        return response
+
 

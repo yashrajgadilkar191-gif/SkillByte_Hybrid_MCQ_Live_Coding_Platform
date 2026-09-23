@@ -180,4 +180,44 @@ def admin_analytics_page_view(request):
     })
 
 
+def profile_page_view(request):
+    """
+    Serves the Student Profile & Account Settings page (Phase 11).
+    """
+    return render(request, 'profile.html', {
+        'platform_name': 'SKILLBYTE',
+        'tagline': 'Where Theory Meets Practice',
+    })
+
+
+def custom_404_view(request, exception=None):
+    """
+    Custom 404 Page Not Found error handler (Phase 11).
+    """
+    return render(request, '404.html', {
+        'platform_name': 'SKILLBYTE',
+        'tagline': 'Where Theory Meets Practice',
+    }, status=404)
+
+
+def custom_403_view(request, exception=None):
+    """
+    Custom 403 Forbidden error handler (Phase 11).
+    """
+    return render(request, '403.html', {
+        'platform_name': 'SKILLBYTE',
+        'tagline': 'Where Theory Meets Practice',
+    }, status=403)
+
+
+def custom_500_view(request):
+    """
+    Custom 500 Server Error handler (Phase 11).
+    """
+    return render(request, '500.html', {
+        'platform_name': 'SKILLBYTE',
+        'tagline': 'Where Theory Meets Practice',
+    }, status=500)
+
+
 

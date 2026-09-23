@@ -9,6 +9,7 @@ from .views import (
     LoginView,
     LogoutView,
     CurrentUserView,
+    ChangePasswordView,
     StudentRoleTestView,
     AdminRoleTestView,
 )
@@ -20,6 +21,7 @@ urlpatterns = [
     path('refresh/', TokenRefreshView.as_view(), name='auth_refresh'),
     path('logout/', LogoutView.as_view(), name='auth_logout'),
     path('me/', CurrentUserView.as_view(), name='auth_me'),
+    path('change-password/', ChangePasswordView.as_view(), name='auth_change_password'),
     path('test-student-role/', StudentRoleTestView.as_view(), name='test_student_role'),
     path('test-admin-role/', AdminRoleTestView.as_view(), name='test_admin_role'),
 ]

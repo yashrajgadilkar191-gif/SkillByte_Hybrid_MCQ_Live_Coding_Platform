@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Profile — SKILLBYTE{% endblock %}
+
+{% block content %}
+<div class="row g-4 justify-content-center">
+    <!-- Left Column: User Summary Card -->
+    <div class="col-lg-4 col-md-5">
+        <div class="card bg-surface border-secondary border-opacity-25 shadow-sm text-center p-4">
+            <div class="mb-3">
+                <div id="profile-avatar" class="rounded-circle bg-primary bg-opacity-25 border border-primary text-primary fw-bold mx-auto d-flex align-items-center justify-content-center fs-1 shadow-sm" style="width: 96px; height: 96px;">
+                    U
+                </div>
+            </div>
+            <h4 class="fw-bold text-light mb-1" id="profile-display-name">Loading...</h4>
+            <div class="text-secondary small font-monospace mb-2" id="profile-display-username">@username</div>
+            <div class="mb-3">
+                <span id="profile-display-role" class="badge bg-primary px-3 py-1">STUDENT</span>
+            </div>
+
+            <hr class="border-secondary border-opacity-25 my-3">
+
+            <div class="text-start small">
+                <div class="d-flex justify-content-between py-1">
+                    <span class="text-secondary">Email</span>
+                    <span class="text-light fw-medium" id="profile-display-email">-</span>
+                </div>
+                <div class="d-flex justify-content-between py-1">
+                    <span class="text-secondary">Member Since</span>
+                    <span class="text-light-subtle" id="profile-display-joined">-</span>
+                </div>
+            </div>
+
+            <!-- Unified Performance Summary Card -->
+            <div class="card bg-darker border-secondary border-opacity-25 p-3 mt-4 text-start">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-secondary small">Skill Tier</span>
+                    <span id="profile-skill-badge" class="badge bg-secondary">Beginner</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-secondary small">Unified Score</span>
+                    <span class="fs-5 fw-bolder text-warning" id="profile-unified-score">0.0</span>
+                </div>
+                <div class="row g-2 pt-2 border-top border-secondary border-opacity-25 text-center small">
+                    <div class="col-6">
+                        <div class="text-secondary small">Theory</div>
+                        <div class="fw-bold text-info" id="profile-theory-score">0.0</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-secondary small">Coding</div>
+                        <div class="fw-bold text-success" id="profile-coding-score">0.0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <a href="/dashboard/" class="btn btn-outline-info btn-sm w-100 mb-2">
+                    <i class="bi bi-speedometer2 me-1"></i>Go to Dashboard
+                </a>
+                <a href="/attempts/" class="btn btn-outline-light btn-sm w-100">
+                    <i class="bi bi-clock-history me-1"></i>View Assessment History
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Settings Forms -->
+    <div class="col-lg-8 col-md-7">
+        <!-- Edit Personal Details -->
+        <div class="card bg-surface border-secondary border-opacity-25 shadow-sm p-4 mb-4">
+            <h5 class="fw-bold text-light mb-1 d-flex align-items-center gap-2">
+                <span class="text-primary">&#9998;</span> Personal Information
+            </h5>
+            <p class="text-secondary small mb-4">Update your display name and email address associated with your SkillByte account.</p>
+
+            <div id="profile-edit-alert" class="alert d-none py-2 px-3 small mb-3"></div>
+
+            <form id="profile-edit-form">
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <label class="form-label small text-secondary">First Name</label>
+                        <input type="text" id="input-first-name" class="form-control bg-darker text-light border-secondary border-opacity-50" placeholder="First Name">
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label small text-secondary">Last Name</label>
+                        <input type="text" id="input-last-name" class="form-control bg-darker text-light border-secondary border-opacity-50" placeholder="Last Name">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small text-secondary">Email Address <span class="text-danger">*</span></label>
+                        <input type="email" id="input-email" required class="form-control bg-darker text-light border-secondary border-opacity-50" placeholder="name@example.com">
+                        <div class="form-text text-secondary small">This email will be used for authentication and score reporting.</div>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-end">
+                    <button type="submit" id="btn-save-profile" class="btn btn-primary btn-sm px-4 fw-medium">
+                        <span id="spinner-save-profile" class="spinner-border spinner-border-sm d-none me-1" role="status"></span>
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Change Password -->
+        <div class="card bg-surface border-secondary border-opacity-25 shadow-sm p-4">
+            <h5 class="fw-bold text-light mb-1 d-flex align-items-center gap-2">
+                <span class="text-warning">&#128274;</span> Change Password
+            </h5>
+            <p class="text-secondary small mb-4">Ensure your account uses a secure password of at least 8 characters.</p>
+
+            <div id="password-change-alert" class="alert d-none py-2 px-3 small mb-3"></div>
+
+            <form id="password-change-form">
+                <div class="mb-3">
+                    <label class="form-label small text-secondary">Current Password <span class="text-danger">*</span></label>
+                    <input type="password" id="input-current-password" required class="form-control bg-darker text-light border-secondary border-opacity-50" placeholder="Enter current password">
+                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <label class="form-label small text-secondary">New Password <span class="text-danger">*</span></label>
+                        <input type="password" id="input-new-password" required minlength="8" class="form-control bg-darker text-light border-secondary border-opacity-50" placeholder="Min. 8 characters">
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label small text-secondary">Confirm New Password <span class="text-danger">*</span></label>
+                        <input type="password" id="input-confirm-password" required minlength="8" class="form-control bg-darker text-light border-secondary border-opacity-50" placeholder="Repeat new password">
+                    </div>
+                </div>
+
+                <div class="mt-4 text-end">
+                    <button type="submit" id="btn-change-password" class="btn btn-warning btn-sm px-4 fw-medium text-dark">
+                        <span id="spinner-change-password" class="spinner-border spinner-border-sm d-none me-1" role="status"></span>
+                        Update Password
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    // 1. Guard authenticated session
+    if (!Auth.isLoggedIn()) {
+        window.location.href = '/login/?next=/profile/';
+        return;
+    }
+
+    await loadProfileData();
+    await loadScoreData();
+
+    // 2. Profile update handler
+    document.getElementById('profile-edit-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const alertBox = document.getElementById('profile-edit-alert');
+        const spinner = document.getElementById('spinner-save-profile');
+        const btn = document.getElementById('btn-save-profile');
+
+        alertBox.className = 'alert d-none py-2 px-3 small mb-3';
+        spinner.classList.remove('d-none');
+        btn.disabled = true;
+
+        const payload = {
+            first_name: document.getElementById('input-first-name').value.trim(),
+            last_name: document.getElementById('input-last-name').value.trim(),
+            email: document.getElementById('input-email').value.trim()
+        };
+
+        try {
+            const res = await Auth.fetchWithAuth('/api/auth/me/', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                alertBox.className = 'alert alert-success py-2 px-3 small mb-3';
+                alertBox.textContent = 'Profile updated successfully!';
+                alertBox.classList.remove('d-none');
+
+                // Update session state
+                Auth.setUser(data);
+                Auth.updateNavUI();
+                renderUserInfo(data);
+            } else {
+                alertBox.className = 'alert alert-danger py-2 px-3 small mb-3';
+                const errors = Object.values(data).flat().join(' ');
+                alertBox.textContent = errors || 'Failed to update profile.';
+                alertBox.classList.remove('d-none');
+            }
+        } catch (err) {
+            alertBox.className = 'alert alert-danger py-2 px-3 small mb-3';
+            alertBox.textContent = 'Network error updating profile: ' + err.message;
+            alertBox.classList.remove('d-none');
+        } finally {
+            spinner.classList.add('d-none');
+            btn.disabled = false;
+        }
+    });
+
+    // 3. Password change handler
+    document.getElementById('password-change-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const alertBox = document.getElementById('password-change-alert');
+        const spinner = document.getElementById('spinner-change-password');
+        const btn = document.getElementById('btn-change-password');
+
+        alertBox.className = 'alert d-none py-2 px-3 small mb-3';
+        const currentPassword = document.getElementById('input-current-password').value;
+        const newPassword = document.getElementById('input-new-password').value;
+        const confirmPassword = document.getElementById('input-confirm-password').value;
+
+        if (newPassword !== confirmPassword) {
+            alertBox.className = 'alert alert-danger py-2 px-3 small mb-3';
+            alertBox.textContent = 'New passwords do not match.';
+            alertBox.classList.remove('d-none');
+            return;
+        }
+
+        spinner.classList.remove('d-none');
+        btn.disabled = true;
+
+        try {
+            const res = await Auth.fetchWithAuth('/api/auth/change-password/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    old_password: currentPassword,
+                    new_password: newPassword,
+                    new_password_confirm: confirmPassword
+                })
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                alertBox.className = 'alert alert-success py-2 px-3 small mb-3';
+                alertBox.textContent = data.message || 'Password updated successfully!';
+                alertBox.classList.remove('d-none');
+                document.getElementById('password-change-form').reset();
+            } else {
+                alertBox.className = 'alert alert-danger py-2 px-3 small mb-3';
+                let errMsg = 'Failed to update password.';
+                if (data.old_password) errMsg = data.old_password.join(' ');
+                else if (data.new_password) errMsg = data.new_password.join(' ');
+                else if (data.new_password_confirm) errMsg = data.new_password_confirm.join(' ');
+                else if (typeof data === 'object') errMsg = Object.values(data).flat().join(' ');
+                alertBox.textContent = errMsg;
+                alertBox.classList.remove('d-none');
+            }
+        } catch (err) {
+            alertBox.className = 'alert alert-danger py-2 px-3 small mb-3';
+            alertBox.textContent = 'Network error changing password: ' + err.message;
+            alertBox.classList.remove('d-none');
+        } finally {
+            spinner.classList.add('d-none');
+            btn.disabled = false;
+        }
+    });
+});
+
+function renderUserInfo(user) {
+    const displayName = user.name || user.username || 'User';
+    document.getElementById('profile-display-name').textContent = displayName;
+    document.getElementById('profile-display-username').textContent = `@${user.username}`;
+    document.getElementById('profile-display-email').textContent = user.email || 'N/A';
+    document.getElementById('profile-display-role').textContent = user.role || 'STUDENT';
+
+    // Avatar initials
+    const initials = (user.first_name ? user.first_name[0] : (user.username ? user.username[0] : 'U')).toUpperCase();
+    document.getElementById('profile-avatar').textContent = initials;
+
+    if (user.date_joined) {
+        const date = new Date(user.date_joined);
+        document.getElementById('profile-display-joined').textContent = date.toLocaleDateString();
+    }
+
+    // Prefill form
+    document.getElementById('input-first-name').value = user.first_name || '';
+    document.getElementById('input-last-name').value = user.last_name || '';
+    document.getElementById('input-email').value = user.email || '';
+}
+
+async function loadProfileData() {
+    try {
+        const res = await Auth.fetchWithAuth('/api/auth/me/');
+        if (res.ok) {
+            const user = await res.json();
+            renderUserInfo(user);
+        }
+    } catch (err) {
+        console.error('Failed to load user profile data:', err);
+    }
+}
+
+async function loadScoreData() {
+    try {
+        const res = await Auth.fetchWithAuth('/api/assessments/progress/');
+        if (res.ok) {
+            const progress = await res.json();
+            document.getElementById('profile-unified-score').textContent = (progress.unified_score || 0).toFixed(1);
+            document.getElementById('profile-theory-score').textContent = (progress.theory_score || 0).toFixed(1);
+            document.getElementById('profile-coding-score').textContent = (progress.coding_score || 0).toFixed(1);
+
+            const badge = document.getElementById('profile-skill-badge');
+            if (badge) {
+                badge.textContent = progress.skill_tier || 'Beginner';
+                badge.className = `badge ${progress.skill_badge_class || 'bg-secondary'}`;
+            }
+        }
+    } catch (err) {
+        console.warn('Could not load progress data for profile:', err);
+    }
+}
+</script>
+{% endblock %}
+

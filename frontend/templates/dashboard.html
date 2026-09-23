@@ -28,12 +28,30 @@
 
                 <hr class="border-secondary opacity-25 my-4">
 
-                <!-- Progress Overview Cards (Phase 8) -->
-                <!-- Progress Overview Cards (Phase 8 & 10) -->
+                <!-- Active Assessment Alert Banner (Phase 11) -->
+                <div id="active-assessment-alert" class="alert alert-primary bg-primary bg-opacity-10 border border-primary border-opacity-50 p-3 mb-4 d-none">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="spinner-grow spinner-grow-sm text-primary" role="status"></span>
+                            <div>
+                                <strong class="text-light">Active Assessment in Progress:</strong>
+                                <span id="active-attempt-info" class="text-secondary small ms-1">Loading...</span>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <a id="active-attempt-resume-btn" href="#" class="btn btn-primary btn-sm px-3 fw-semibold">
+                                <i class="bi bi-play-circle me-1"></i>Resume Assessment
+                            </a>
+                            <button id="active-attempt-abandon-btn" class="btn btn-outline-danger btn-sm px-2" onclick="abandonActiveAttempt()">
+                                Abandon
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Overview & Unified Score (Phase 8 & 10) -->
                 <div id="dashboard-progress-section" class="mb-4 d-none">
                     <div class="d-flex align-items-center justify-content-between mb-3">
-                        <h5 class="fw-bold text-light mb-0">Progress Overview</h5>
-                        <a href="/attempts/" class="btn btn-outline-info btn-sm">Full Attempt History &rarr;</a>
                         <h5 class="fw-bold text-light mb-0">Progress Overview & Unified Score</h5>
                         <div class="d-flex align-items-center gap-2">
                             <a href="/leaderboard/" class="btn btn-outline-warning btn-sm"><i class="bi bi-trophy-fill me-1"></i>Leaderboard</a>
@@ -267,6 +285,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Load Student's previous attempts and progress
         await Promise.all([
+            checkActiveAssessment(),
             loadDashboardProgress(),
             loadRecentAttempts()
         ]);
@@ -278,6 +297,60 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 1500);
     }
 });
+
+let currentActiveAttemptId = null;
+
+async function checkActiveAssessment() {
+    try {
+        let url = '/api/assessments/active/';
+        const sessionParam = getDashboardSessionParam();
+        if (sessionParam) url += `?${sessionParam}`;
+
+        const res = await fetch(url, { headers: getDashboardAuthHeaders() });
+        if (!res.ok) return;
+
+        const data = await res.json();
+        const alertEl = document.getElementById('active-assessment-alert');
+        if (data.has_active_attempt && data.attempt) {
+            currentActiveAttemptId = data.attempt.id;
+            const mins = Math.floor(data.attempt.remaining_seconds / 60);
+            const secs = data.attempt.remaining_seconds % 60;
+            const timeStr = `${mins}m ${secs < 10 ? '0' : ''}${secs}s remaining`;
+            document.getElementById('active-attempt-info').textContent =
+                `#${data.attempt.id} [${data.attempt.question_type}] ${data.attempt.category} (${data.attempt.difficulty}) • ${timeStr}`;
+            document.getElementById('active-attempt-resume-btn').href = data.attempt.resume_url;
+            alertEl.classList.remove('d-none');
+        } else {
+            alertEl.classList.add('d-none');
+            currentActiveAttemptId = null;
+        }
+    } catch (e) {
+        console.warn("Could not check active assessment:", e);
+    }
+}
+
+async function abandonActiveAttempt() {
+    if (!currentActiveAttemptId) return;
+    if (!confirm(`Are you sure you want to abandon assessment attempt #${currentActiveAttemptId}?`)) return;
+    try {
+        const res = await fetch(`/api/assessments/${currentActiveAttemptId}/abandon/`, {
+            method: 'POST',
+            headers: getDashboardAuthHeaders(),
+            body: JSON.stringify({})
+        });
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            alert(err.error || "Failed to abandon assessment.");
+            return;
+        }
+        document.getElementById('active-assessment-alert').classList.add('d-none');
+        currentActiveAttemptId = null;
+        loadDashboardProgress();
+        loadRecentAttempts();
+    } catch (e) {
+        alert("Error: " + e.message);
+    }
+}
 
 async function loadDashboardProgress() {
     try {

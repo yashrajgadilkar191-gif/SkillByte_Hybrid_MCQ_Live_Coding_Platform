@@ -20,9 +20,17 @@ from api.views import (
     admin_question_bank_page_view,
     leaderboard_page_view,
     admin_analytics_page_view,
+    profile_page_view,
+    custom_404_view,
+    custom_403_view,
+    custom_500_view,
 )
 from questions.leaderboard_views import LeaderboardView
-from questions.analytics_views import AdminAnalyticsView
+from questions.analytics_views import AdminAnalyticsView, AdminAnalyticsExportView
+
+handler404 = 'api.views.custom_404_view'
+handler403 = 'api.views.custom_403_view'
+handler500 = 'api.views.custom_500_view'
 
 urlpatterns = [
     path('admin/questions/', admin_question_bank_page_view, name='admin_question_bank_page'),
@@ -32,12 +40,15 @@ urlpatterns = [
     path('api/questions/', include('questions.urls')),
     path('api/assessments/', include('questions.assessment_urls')),
     path('api/leaderboard/', LeaderboardView.as_view(), name='api_leaderboard'),
+    path('api/admin/analytics/export/', AdminAnalyticsExportView.as_view(), name='api_admin_analytics_export'),
     path('api/admin/analytics/', AdminAnalyticsView.as_view(), name='api_admin_analytics'),
     path('api/', include('api.urls')),
     path('', index_view, name='home'),
     path('login/', login_page_view, name='login'),
     path('register/', register_page_view, name='register'),
     path('dashboard/', dashboard_page_view, name='dashboard'),
+    path('profile/', profile_page_view, name='profile_page'),
+    path('settings/', profile_page_view),
     path('leaderboard/', leaderboard_page_view, name='leaderboard_page'),
     path('attempts/', attempts_page_view, name='my_attempts_page'),
     path('assessments/history/', attempts_page_view),
@@ -53,6 +64,10 @@ urlpatterns = [
     path('assessments/coding/', coding_setup_page_view),
     path('assessments/coding/<int:attempt_id>/', coding_assessment_page_view),
     path('assessments/coding/<int:attempt_id>/result/', coding_result_page_view),
+    # Error pages (Phase 11)
+    path('404/', custom_404_view, name='error_404_page'),
+    path('403/', custom_403_view, name='error_403_page'),
+    path('500/', custom_500_view, name='error_500_page'),
 ]
 
 from django.conf import settings

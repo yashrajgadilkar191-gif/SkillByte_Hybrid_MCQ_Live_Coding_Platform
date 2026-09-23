@@ -18,16 +18,84 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'name', 'email', 'role']
-        read_only_fields = ['id', 'name', 'email', 'role']
+        fields = ['id', 'username', 'name', 'first_name', 'last_name', 'email', 'role', 'date_joined']
+        read_only_fields = ['id', 'username', 'name', 'role', 'date_joined']
 
     def get_name(self, obj):
-        return obj.first_name.strip() or obj.username
+        full = f"{obj.first_name} {obj.last_name}".strip()
+        return full or obj.first_name.strip() or obj.username
 
     def get_role(self, obj):
         if hasattr(obj, 'profile'):
             return obj.profile.role
         return Role.STUDENT
+
+
+class UserProfileUpdateSerializer(serializers.ModelSerializer):
+    """
+    Allows authenticated users to update their profile details (first name, last name, email).
+    """
+    first_name = serializers.CharField(required=False, allow_blank=True, max_length=150, trim_whitespace=True)
+    last_name = serializers.CharField(required=False, allow_blank=True, max_length=150, trim_whitespace=True)
+    email = serializers.EmailField(required=True)
+
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email']
+
+    def validate_email(self, value):
+        normalized_email = value.strip().lower()
+        query = User.objects.filter(email__iexact=normalized_email)
+        if self.instance:
+            query = query.exclude(id=self.instance.id)
+        if query.exists():
+            raise serializers.ValidationError("This email address is already in use by another account.")
+        return normalized_email
+
+    def update(self, instance, validated_data):
+        instance.first_name = validated_data.get('first_name', instance.first_name).strip()
+        instance.last_name = validated_data.get('last_name', instance.last_name).strip()
+        instance.email = validated_data.get('email', instance.email).strip().lower()
+        instance.save()
+        return instance
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    """
+    Enforces secure password changes verifying current password and standard Django complexity.
+    """
+    old_password = serializers.CharField(required=True, write_only=True)
+    new_password = serializers.CharField(required=True, write_only=True)
+    new_password_confirm = serializers.CharField(required=True, write_only=True)
+
+    def validate_old_password(self, value):
+        user = self.context['request'].user
+        if not user.check_password(value):
+            raise serializers.ValidationError("Current password is incorrect.")
+        return value
+
+    def validate(self, attrs):
+        old_password = attrs.get('old_password')
+        new_password = attrs.get('new_password')
+        new_password_confirm = attrs.get('new_password_confirm')
+
+        if new_password != new_password_confirm:
+            raise serializers.ValidationError({"new_password_confirm": "New passwords do not match."})
+
+        if old_password == new_password:
+            raise serializers.ValidationError({"new_password": "New password cannot be the same as your current password."})
+
+        user = self.context['request'].user
+        from django.contrib.auth.password_validation import validate_password
+        validate_password(new_password, user=user)
+
+        return attrs
+
+    def save(self, **kwargs):
+        user = self.context['request'].user
+        user.set_password(self.validated_data['new_password'])
+        user.save()
+        return user
 
 
 class RegisterSerializer(serializers.Serializer):

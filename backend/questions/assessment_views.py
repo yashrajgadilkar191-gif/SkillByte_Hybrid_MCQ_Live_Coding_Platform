@@ -837,6 +837,7 @@ class CodingAssessmentRunCodeView(APIView):
     and NEVER queries, evaluates, or leaks hidden test cases.
     """
     permission_classes = [AllowAny]
+    throttle_scope = 'code_run'
 
     def post(self, request, attempt_id):
         attempt, error_response = get_attempt_for_request(attempt_id, request)
@@ -1272,3 +1273,99 @@ class CodingAssessmentResultView(APIView):
             "execution_notice": "Automated grading scheduled via Judge0 API in Phase 6.",
             "question": question_payload,
         }, status=status.HTTP_200_OK)
+
+
+class AssessmentAbandonView(APIView):
+    """
+    POST /api/assessments/<int:attempt_id>/abandon/
+    Gracefully abandons an in-progress assessment attempt (Phase 11).
+    """
+    permission_classes = [AllowAny]
+
+    def post(self, request, attempt_id):
+        attempt, error_response = get_attempt_for_request(attempt_id, request)
+        if error_response:
+            return error_response
+
+        if attempt.status != AttemptStatus.IN_PROGRESS:
+            return Response(
+                {"error": f"Cannot abandon assessment: Attempt is already {attempt.get_status_display().lower()}."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        attempt.status = AttemptStatus.ABANDONED
+        attempt.submitted_at = timezone.now()
+        attempt.save(update_fields=['status', 'submitted_at'])
+
+        return Response({
+            "status": "success",
+            "message": "Assessment attempt has been abandoned.",
+            "attempt_id": attempt.id,
+            "attempt_status": attempt.status,
+        }, status=status.HTTP_200_OK)
+
+
+class ActiveAssessmentAttemptView(APIView):
+    """
+    GET /api/assessments/active/
+    Returns the most recent active in-progress assessment attempt for the current user or guest (Phase 11).
+    Also performs server-side auto-expiry for expired attempts.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        user = request.user if (request.user and request.user.is_authenticated) else None
+
+        if user:
+            in_progress_attempts = AssessmentAttempt.objects.filter(
+                user=user,
+                status=AttemptStatus.IN_PROGRESS
+            ).order_by('-started_at')
+        else:
+            session_id = (
+                request.query_params.get('session_id') or
+                request.headers.get('X-Session-ID') or
+                request.COOKIES.get('sessionid')
+            )
+            if not session_id:
+                return Response({"has_active_attempt": False, "attempt": None}, status=status.HTTP_200_OK)
+            in_progress_attempts = AssessmentAttempt.objects.filter(
+                session_id=session_id,
+                user__isnull=True,
+                status=AttemptStatus.IN_PROGRESS
+            ).order_by('-started_at')
+
+        for attempt in in_progress_attempts:
+            if attempt.is_time_expired:
+                # Expired attempt: auto-expire by setting submitted_at
+                if not attempt.submitted_at:
+                    attempt.submitted_at = timezone.now()
+                    attempt.save(update_fields=['submitted_at'])
+                continue
+
+            # Active unexpired attempt found
+            remaining_seconds = 0
+            if attempt.started_at and attempt.time_limit_seconds:
+                elapsed = (timezone.now() - attempt.started_at).total_seconds()
+                remaining_seconds = max(0, int(attempt.time_limit_seconds - elapsed))
+
+            resume_url = (
+                f"/assessments/mcq/{attempt.id}/"
+                if attempt.question_type == QuestionType.MCQ
+                else f"/coding/assessment/{attempt.id}/"
+            )
+
+            return Response({
+                "has_active_attempt": True,
+                "attempt": {
+                    "id": attempt.id,
+                    "question_type": attempt.question_type,
+                    "category": attempt.category,
+                    "difficulty": attempt.difficulty,
+                    "remaining_seconds": remaining_seconds,
+                    "resume_url": resume_url,
+                }
+            }, status=status.HTTP_200_OK)
+
+        return Response({"has_active_attempt": False, "attempt": None}, status=status.HTTP_200_OK)
+

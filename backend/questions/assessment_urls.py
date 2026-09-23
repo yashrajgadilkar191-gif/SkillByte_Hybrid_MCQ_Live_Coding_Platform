@@ -15,16 +15,21 @@ from .assessment_views import (
     CodingAssessmentResultView,
     MyAssessmentAttemptsView,
     AssessmentProgressView,
+    AssessmentAbandonView,
+    ActiveAssessmentAttemptView,
 )
 
 urlpatterns = [
+    # Assessment Resumption & Lifecycle (Phase 11)
+    path('active/', ActiveAssessmentAttemptView.as_view(), name='assessment_active'),
+    path('<int:attempt_id>/abandon/', AssessmentAbandonView.as_view(), name='assessment_abandon'),
+
     # MCQ Assessment
     path('mcq/start/', MCQAssessmentStartView.as_view(), name='mcq_start'),
     path('mcq/<int:attempt_id>/answer/', MCQAssessmentAnswerView.as_view(), name='mcq_answer'),
     path('mcq/<int:attempt_id>/submit/', MCQAssessmentSubmitView.as_view(), name='mcq_submit'),
     path('mcq/<int:attempt_id>/result/', MCQAssessmentResultView.as_view(), name='mcq_result'),
 
-    # Live Coding Assessment (Phase 5)
     # Live Coding Assessment (Phase 5, 6 & 10)
     path('coding/start/', CodingAssessmentStartView.as_view(), name='coding_start'),
     path('coding/<int:attempt_id>/', CodingAssessmentDetailView.as_view(), name='coding_detail'),

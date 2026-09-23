@@ -1,0 +1,440 @@
+{% extends 'base.html' %}
+
+{% block title %}Live MCQ Assessment — SKILLBYTE{% endblock %}
+
+{% block content %}
+<div class="row g-4" id="assessment-container">
+    <!-- Main Question Section -->
+    <div class="col-lg-8">
+        <div class="card shadow-lg border-0 bg-glass text-light h-100">
+            <!-- Header bar with Category, Difficulty, and Live Timer -->
+            <div class="card-header bg-darker border-secondary border-opacity-25 p-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <span id="assessment-category-badge" class="badge bg-primary">Loading Category...</span>
+                    <span id="assessment-difficulty-badge" class="badge bg-secondary">Loading...</span>
+                </div>
+                <!-- Countdown Timer -->
+                <div class="d-flex align-items-center gap-2 px-3 py-1 rounded bg-surface border border-secondary border-opacity-50">
+                    <span class="text-secondary small">Time Left:</span>
+                    <span id="countdown-timer" class="fw-bold font-monospace fs-5 text-warning">--:--</span>
+                </div>
+            </div>
+
+            <!-- Question Body -->
+            <div class="card-body p-4 p-md-5">
+                <div class="d-flex align-items-center justify-content-between mb-3 text-secondary small">
+                    <span id="question-index-label" class="fw-semibold text-light">Question 1 of --</span>
+                    <span id="question-marks-label" class="badge bg-secondary">1 Mark</span>
+                </div>
+
+                <h4 id="question-title-text" class="fw-semibold text-light mb-4">Loading Question...</h4>
+
+                <!-- Four Options Container -->
+                <div id="options-container" class="d-flex flex-column gap-3 mb-5">
+                    <!-- Populated dynamically via JavaScript -->
+                </div>
+
+                <hr class="border-secondary opacity-25 my-4">
+
+                <!-- Navigation Action Buttons -->
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div class="d-flex gap-2">
+                        <button type="button" id="prev-btn" class="btn btn-outline-light btn-sm px-3" disabled>
+                            &larr; Previous
+                        </button>
+                        <button type="button" id="next-btn" class="btn btn-primary btn-sm px-3">
+                            Next &rarr;
+                        </button>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="button" id="clear-btn" class="btn btn-outline-secondary btn-sm">
+                            Clear Selection
+                        </button>
+                        <button type="button" id="mark-review-btn" class="btn btn-outline-warning btn-sm">
+                            Mark for Review
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Question Palette Sidebar -->
+    <div class="col-lg-4">
+        <div class="card shadow-lg border-0 bg-glass text-light mb-4">
+            <div class="card-header bg-darker border-secondary border-opacity-25 p-3">
+                <h6 class="mb-0 fw-bold text-light">Question Palette</h6>
+            </div>
+            <div class="card-body p-3">
+                <div id="palette-grid" class="d-flex flex-wrap gap-2 mb-4">
+                    <!-- Palette items populated by JS -->
+                </div>
+
+                <!-- Legend -->
+                <div class="p-3 bg-darker rounded border border-secondary border-opacity-25 small mb-4">
+                    <div class="row g-2">
+                        <div class="col-6 d-flex align-items-center gap-2">
+                            <span class="badge bg-success rounded-circle" style="width: 12px; height: 12px; padding: 0;">&nbsp;</span>
+                            <span class="text-secondary">Answered (<span id="count-answered">0</span>)</span>
+                        </div>
+                        <div class="col-6 d-flex align-items-center gap-2">
+                            <span class="badge bg-warning rounded-circle" style="width: 12px; height: 12px; padding: 0;">&nbsp;</span>
+                            <span class="text-secondary">Review (<span id="count-review">0</span>)</span>
+                        </div>
+                        <div class="col-6 d-flex align-items-center gap-2">
+                            <span class="badge bg-secondary rounded-circle" style="width: 12px; height: 12px; padding: 0;">&nbsp;</span>
+                            <span class="text-secondary">Unanswered (<span id="count-unanswered">0</span>)</span>
+                        </div>
+                        <div class="col-6 d-flex align-items-center gap-2">
+                            <span class="badge bg-primary rounded-circle" style="width: 12px; height: 12px; padding: 0;">&nbsp;</span>
+                            <span class="text-secondary">Current</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="button" id="open-submit-modal-btn" class="btn btn-success w-100 py-2 fw-semibold">
+                    Submit Assessment
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Submit Confirmation Modal -->
+<div class="modal fade" id="submitConfirmModal" tabindex="-1" aria-labelledby="submitModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-surface text-light border border-secondary">
+            <div class="modal-header border-secondary border-opacity-25">
+                <h5 class="modal-title fw-bold" id="submitModalLabel">Submit Assessment</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4">
+                <p class="mb-3">Are you sure you want to finish and submit your assessment?</p>
+                <div class="p-3 bg-darker rounded border border-secondary border-opacity-25 small mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Total Questions:</span>
+                        <strong id="modal-total-q">0</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1 text-success">
+                        <span>Answered:</span>
+                        <strong id="modal-answered-q">0</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1 text-warning">
+                        <span>Marked for Review:</span>
+                        <strong id="modal-review-q">0</strong>
+                    </div>
+                    <div class="d-flex justify-content-between text-secondary">
+                        <span>Unanswered:</span>
+                        <strong id="modal-unanswered-q">0</strong>
+                    </div>
+                </div>
+                <p class="text-muted small mb-0">Once submitted, your responses will be evaluated server-side and final marks will be calculated.</p>
+            </div>
+            <div class="modal-footer border-secondary border-opacity-25">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Keep Practicing</button>
+                <button type="button" id="confirm-submit-btn" class="btn btn-success btn-sm px-3 d-flex align-items-center gap-2">
+                    <span id="submit-spinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    <span id="submit-btn-text">Confirm & Submit</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const ATTEMPT_ID = {{ attempt_id }};
+
+let assessmentData = null;
+let currentIndex = 0;
+let userAnswers = {};      // questionId -> optionId
+let reviewFlags = {};      // questionId -> boolean
+let timerInterval = null;
+let secondsRemaining = 600;
+
+document.addEventListener('DOMContentLoaded', async () => {
+    // 1. Retrieve cached attempt data or fetch from server
+    const cached = sessionStorage.getItem(`mcq_attempt_${ATTEMPT_ID}`);
+    if (cached) {
+        assessmentData = JSON.parse(cached);
+        initAssessmentUI();
+    } else {
+        // If not in session storage, redirect to setup
+        alert("Session details not found. Redirecting to assessment setup.");
+        window.location.href = '/assessments/mcq/';
+    }
+});
+
+function initAssessmentUI() {
+    document.getElementById('assessment-category-badge').textContent = assessmentData.category;
+    document.getElementById('assessment-difficulty-badge').textContent = assessmentData.difficulty;
+
+    // Start countdown timer
+    secondsRemaining = assessmentData.time_limit_seconds || 600;
+    startTimer();
+
+    // Render palette
+    renderPalette();
+
+    // Render initial question
+    renderQuestion(0);
+
+    // Bind event listeners
+    document.getElementById('prev-btn').addEventListener('click', () => {
+        if (currentIndex > 0) renderQuestion(currentIndex - 1);
+    });
+
+    document.getElementById('next-btn').addEventListener('click', () => {
+        if (currentIndex < assessmentData.questions.length - 1) {
+            renderQuestion(currentIndex + 1);
+        } else {
+            openSubmitModal();
+        }
+    });
+
+    document.getElementById('clear-btn').addEventListener('click', () => {
+        const q = assessmentData.questions[currentIndex];
+        delete userAnswers[q.id];
+        // Send unselect to server
+        recordAnswerOnServer(q.id, null);
+        renderQuestion(currentIndex);
+        renderPalette();
+    });
+
+    document.getElementById('mark-review-btn').addEventListener('click', () => {
+        const q = assessmentData.questions[currentIndex];
+        reviewFlags[q.id] = !reviewFlags[q.id];
+        renderQuestion(currentIndex);
+        renderPalette();
+    });
+
+    document.getElementById('open-submit-modal-btn').addEventListener('click', openSubmitModal);
+    document.getElementById('confirm-submit-btn').addEventListener('click', executeSubmit);
+}
+
+function startTimer() {
+    updateTimerDisplay();
+    timerInterval = setInterval(() => {
+        secondsRemaining--;
+        updateTimerDisplay();
+
+        if (secondsRemaining <= 0) {
+            clearInterval(timerInterval);
+            alert("Time is up! Your assessment will now be submitted automatically.");
+            executeSubmit();
+        }
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    const timerEl = document.getElementById('countdown-timer');
+    const minutes = Math.floor(secondsRemaining / 60);
+    const seconds = secondsRemaining % 60;
+    timerEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+    if (secondsRemaining <= 60) {
+        timerEl.className = "fw-bold font-monospace fs-5 text-danger animate-pulse";
+    } else {
+        timerEl.className = "fw-bold font-monospace fs-5 text-warning";
+    }
+}
+
+function renderQuestion(index) {
+    currentIndex = index;
+    const questions = assessmentData.questions;
+    const q = questions[index];
+
+    // Header info
+    document.getElementById('question-index-label').textContent = `Question ${index + 1} of ${questions.length}`;
+    document.getElementById('question-marks-label').textContent = `${q.marks} Mark${q.marks > 1 ? 's' : ''}`;
+    document.getElementById('question-title-text').textContent = q.title + (q.description ? ` — ${q.description}` : '');
+
+    // Options rendering
+    const container = document.getElementById('options-container');
+    container.innerHTML = '';
+
+    const selectedOptionId = userAnswers[q.id];
+
+    q.options.forEach((opt) => {
+        const isSelected = selectedOptionId === opt.id;
+        const optCard = document.createElement('div');
+        optCard.className = `card p-3 cursor-pointer border ${isSelected ? 'border-primary bg-primary bg-opacity-10 text-light' : 'bg-surface border-secondary border-opacity-25 text-light'}`;
+        optCard.style.cursor = 'pointer';
+
+        optCard.innerHTML = `
+            <div class="d-flex align-items-center gap-3">
+                <div class="badge rounded-circle ${isSelected ? 'bg-primary text-white' : 'bg-darker border border-secondary text-secondary'}" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">
+                    ${opt.option_key}
+                </div>
+                <div class="flex-grow-1">${escapeHtml(opt.option_text)}</div>
+            </div>
+        `;
+
+        optCard.addEventListener('click', () => {
+            userAnswers[q.id] = opt.id;
+            recordAnswerOnServer(q.id, opt.id);
+            renderQuestion(currentIndex);
+            renderPalette();
+        });
+
+        container.appendChild(optCard);
+    });
+
+    // Update button states
+    document.getElementById('prev-btn').disabled = (index === 0);
+    const nextBtn = document.getElementById('next-btn');
+    if (index === questions.length - 1) {
+        nextBtn.textContent = "Review & Submit";
+        nextBtn.className = "btn btn-success btn-sm px-3";
+    } else {
+        nextBtn.textContent = "Next →";
+        nextBtn.className = "btn btn-primary btn-sm px-3";
+    }
+
+    const reviewBtn = document.getElementById('mark-review-btn');
+    if (reviewFlags[q.id]) {
+        reviewBtn.textContent = "Unmark Review";
+        reviewBtn.className = "btn btn-warning btn-sm";
+    } else {
+        reviewBtn.textContent = "Mark for Review";
+        reviewBtn.className = "btn btn-outline-warning btn-sm";
+    }
+
+    renderPalette();
+}
+
+function renderPalette() {
+    const grid = document.getElementById('palette-grid');
+    grid.innerHTML = '';
+
+    let answered = 0;
+    let review = 0;
+    let unanswered = 0;
+
+    assessmentData.questions.forEach((q, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = idx + 1;
+        btn.style.width = '38px';
+        btn.style.height = '38px';
+        btn.className = 'btn btn-sm fw-bold rounded ';
+
+        const isCurrent = (idx === currentIndex);
+        const isAnswered = (userAnswers[q.id] !== undefined && userAnswers[q.id] !== null);
+        const isReview = reviewFlags[q.id];
+
+        if (isCurrent) {
+            btn.className += 'btn-primary border-white';
+        } else if (isReview) {
+            btn.className += 'btn-warning text-dark';
+            review++;
+        } else if (isAnswered) {
+            btn.className += 'btn-success';
+            answered++;
+        } else {
+            btn.className += 'btn-dark border border-secondary border-opacity-50 text-secondary';
+            unanswered++;
+        }
+
+        if (isAnswered && !isReview && !isCurrent) {
+            // counted above
+        }
+
+        btn.addEventListener('click', () => {
+            renderQuestion(idx);
+        });
+
+        grid.appendChild(btn);
+    });
+
+    document.getElementById('count-answered').textContent = Object.keys(userAnswers).length;
+    document.getElementById('count-review').textContent = Object.values(reviewFlags).filter(Boolean).length;
+    document.getElementById('count-unanswered').textContent = assessmentData.questions.length - Object.keys(userAnswers).length;
+}
+
+async function recordAnswerOnServer(questionId, optionId) {
+    try {
+        const headers = { 'Content-Type': 'application/json' };
+        const access = Auth.getAccessToken();
+        if (access) headers['Authorization'] = `Bearer ${access}`;
+
+        const guestSession = localStorage.getItem('skillbyte_guest_session_id');
+
+        await fetch(`/api/assessments/mcq/${ATTEMPT_ID}/answer/`, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({
+                question_id: questionId,
+                option_id: optionId,
+                session_id: guestSession
+            })
+        });
+    } catch (err) {
+        console.warn("Background answer save failed:", err);
+    }
+}
+
+function openSubmitModal() {
+    const total = assessmentData.questions.length;
+    const answered = Object.keys(userAnswers).length;
+    const review = Object.values(reviewFlags).filter(Boolean).length;
+    const unans = total - answered;
+
+    document.getElementById('modal-total-q').textContent = total;
+    document.getElementById('modal-answered-q').textContent = answered;
+    document.getElementById('modal-review-q').textContent = review;
+    document.getElementById('modal-unanswered-q').textContent = unans;
+
+    const modal = new bootstrap.Modal(document.getElementById('submitConfirmModal'));
+    modal.show();
+}
+
+async function executeSubmit() {
+    clearInterval(timerInterval);
+
+    const submitBtn = document.getElementById('confirm-submit-btn');
+    const spinner = document.getElementById('submit-spinner');
+    const btnText = document.getElementById('submit-btn-text');
+
+    if (submitBtn) submitBtn.disabled = true;
+    if (spinner) spinner.classList.remove('d-none');
+    if (btnText) btnText.textContent = "Grading Assessment...";
+
+    try {
+        const headers = { 'Content-Type': 'application/json' };
+        const access = Auth.getAccessToken();
+        if (access) headers['Authorization'] = `Bearer ${access}`;
+        const guestSession = localStorage.getItem('skillbyte_guest_session_id');
+
+        const res = await fetch(`/api/assessments/mcq/${ATTEMPT_ID}/submit/`, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({ session_id: guestSession })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+            // Dismiss modal if open
+            const modalEl = document.getElementById('submitConfirmModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+
+            window.location.href = `/assessments/mcq/${ATTEMPT_ID}/result/`;
+        } else {
+            alert(data.error || "Submission failed. Please try again.");
+            if (submitBtn) submitBtn.disabled = false;
+            if (spinner) spinner.classList.add('d-none');
+            if (btnText) btnText.textContent = "Confirm & Submit";
+        }
+    } catch (err) {
+        alert("Network error: Unable to submit assessment.");
+        if (submitBtn) submitBtn.disabled = false;
+        if (spinner) spinner.classList.add('d-none');
+        if (btnText) btnText.textContent = "Confirm & Submit";
+    }
+}
+</script>
+{% endblock %}
+

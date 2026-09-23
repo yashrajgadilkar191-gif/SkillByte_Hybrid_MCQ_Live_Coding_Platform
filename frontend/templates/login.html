@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}Login — SKILLBYTE{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-lg border-0 bg-glass text-light">
+            <div class="card-body p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <span class="badge bg-primary px-3 py-1 mb-2">Student & Admin Portal</span>
+                    <h2 class="fw-bold mb-1">Welcome Back</h2>
+                    <p class="text-secondary small">Sign in to your SkillByte account</p>
+                </div>
+
+                <!-- Error Alert -->
+                <div id="login-error-alert" class="alert alert-danger d-none small py-2 px-3 mb-3" role="alert"></div>
+
+                <!-- Success Alert -->
+                <div id="login-success-alert" class="alert alert-success d-none small py-2 px-3 mb-3" role="alert"></div>
+
+                <form id="login-form" novalidate>
+                    <div class="mb-3">
+                        <label for="login-email" class="form-label small text-secondary">Email Address</label>
+                        <input type="email" class="form-control bg-darker text-light border-secondary border-opacity-50" id="login-email" placeholder="student@example.com" required autocomplete="email">
+                        <div class="invalid-feedback small">Please enter a valid email address.</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="login-password" class="form-label small text-secondary">Password</label>
+                        <input type="password" class="form-control bg-darker text-light border-secondary border-opacity-50" id="login-password" placeholder="••••••••" required autocomplete="current-password">
+                        <div class="invalid-feedback small">Password is required.</div>
+                    </div>
+
+                    <button type="submit" id="login-submit-btn" class="btn btn-primary w-100 py-2 fw-semibold d-flex align-items-center justify-content-center gap-2">
+                        <span id="login-spinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <span id="login-btn-text">Sign In</span>
+                    </button>
+                </form>
+
+                <hr class="border-secondary opacity-25 my-4">
+
+                <div class="d-flex flex-column gap-2 text-center small text-secondary">
+                    <div>
+                        Don't have an account? <a href="/register/" class="text-primary text-decoration-none fw-medium">Register as Student</a>
+                    </div>
+                    <div>
+                        Or explore without an account:
+                        <button class="btn btn-link text-warning p-0 small fw-medium" onclick="Auth.setGuestMode(); window.location.href='/dashboard/';">
+                            Continue as Guest
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Check if redirected due to session expiration
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('expired')) {
+        const errorAlert = document.getElementById('login-error-alert');
+        errorAlert.textContent = "Your session has expired. Please log in again.";
+        errorAlert.classList.remove('d-none');
+    }
+
+    const form = document.getElementById('login-form');
+    const emailInput = document.getElementById('login-email');
+    const passwordInput = document.getElementById('login-password');
+    const errorAlert = document.getElementById('login-error-alert');
+    const successAlert = document.getElementById('login-success-alert');
+    const submitBtn = document.getElementById('login-submit-btn');
+    const spinner = document.getElementById('login-spinner');
+    const btnText = document.getElementById('login-btn-text');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorAlert.classList.add('d-none');
+        successAlert.classList.add('d-none');
+
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+
+        // Basic client validation
+        let valid = true;
+        if (!email || !email.includes('@')) {
+            emailInput.classList.add('is-invalid');
+            valid = false;
+        } else {
+            emailInput.classList.remove('is-invalid');
+        }
+
+        if (!password) {
+            passwordInput.classList.add('is-invalid');
+            valid = false;
+        } else {
+            passwordInput.classList.remove('is-invalid');
+        }
+
+        if (!valid) return;
+
+        // Show loading state
+        submitBtn.disabled = true;
+        spinner.classList.remove('d-none');
+        btnText.textContent = "Authenticating...";
+
+        try {
+            const res = await fetch('/api/auth/login/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                Auth.setSession({ access: data.access, refresh: data.refresh }, data.user);
+                successAlert.textContent = "Login successful! Redirecting to dashboard...";
+                successAlert.classList.remove('d-none');
+                setTimeout(() => {
+                    window.location.href = '/dashboard/';
+                }, 700);
+            } else {
+                let msg = "Login failed. Please check your credentials.";
+                if (data.non_field_errors) {
+                    msg = data.non_field_errors.join(' ');
+                } else if (data.detail) {
+                    msg = data.detail;
+                } else if (typeof data === 'object') {
+                    msg = Object.values(data).flat().join(' ');
+                }
+                errorAlert.textContent = msg;
+                errorAlert.classList.remove('d-none');
+            }
+        } catch (err) {
+            errorAlert.textContent = "Network error. Please verify the server is running.";
+            errorAlert.classList.remove('d-none');
+        } finally {
+            submitBtn.disabled = false;
+            spinner.classList.add('d-none');
+            btnText.textContent = "Sign In";
+        }
+    });
+});
+</script>
+{% endblock %}
+

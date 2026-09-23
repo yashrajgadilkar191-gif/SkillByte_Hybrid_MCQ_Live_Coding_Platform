@@ -1,0 +1,505 @@
+{% extends 'base.html' %}
+
+{% block title %}Coding Assessment Result — SKILLBYTE{% endblock %}
+
+{% block extra_css %}
+<style>
+    pre.code-view {
+        background-color: #0b0f19;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 8px;
+        padding: 16px;
+        color: #e6edf3;
+        font-family: 'JetBrains Mono', Consolas, monospace;
+        font-size: 0.9rem;
+        max-height: 480px;
+        overflow-y: auto;
+    }
+    .status-badge-lg {
+        font-size: 0.95rem;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+    }
+    .stat-card {
+        background: rgba(22, 27, 34, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .stat-card:hover {
+        border-color: rgba(255, 255, 255, 0.25);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+
+        <!-- Loading State -->
+        <div id="result-loading" class="card shadow-lg border-0 bg-glass text-light p-5 text-center my-4">
+            <div class="spinner-border text-primary mx-auto mb-3" style="width: 3rem; height: 3rem;" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <h4 class="fw-bold">Evaluating Coding Submission...</h4>
+            <p class="text-secondary small mb-0">Retrieving test case verdict and scoring breakdown from PostgreSQL.</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="result-error" class="card shadow-lg border-0 bg-glass text-light p-5 text-center my-4 d-none">
+            <div class="text-danger fs-1 mb-2">&#9888;</div>
+            <h4 class="fw-bold text-danger" id="result-error-title">Unable to Load Result</h4>
+            <p class="text-secondary small mb-4" id="result-error-msg">The requested assessment result could not be found or you lack permission to view it.</p>
+            <div class="d-flex justify-content-center gap-3">
+                <button type="button" class="btn btn-outline-light btn-sm px-3" onclick="location.reload()">Retry</button>
+                <a href="/dashboard/" class="btn btn-primary btn-sm px-3">Go to Dashboard</a>
+            </div>
+        </div>
+
+        <!-- Main Result Container -->
+        <div id="result-container" class="card shadow-lg border-0 bg-glass text-light mb-4 d-none">
+            <div class="card-body p-4 p-md-5">
+
+                <!-- 1. Assessment Header -->
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                            <span class="badge bg-primary px-3 py-1">Coding Assessment Result</span>
+                            <span class="badge bg-dark border border-secondary text-secondary" id="res-header-category">Category</span>
+                            <span class="badge bg-dark border border-secondary text-secondary" id="res-header-difficulty">Difficulty</span>
+                            <span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-25" id="res-header-lang">Language</span>
+                        </div>
+                        <h2 class="fw-bold mb-1" id="res-problem-title">Problem Title</h2>
+                        <p class="text-secondary small mb-0" id="res-meta-text">Attempt #{{ attempt_id }}</p>
+                    </div>
+                    <div>
+                        <span class="badge status-badge-lg fw-semibold" id="res-status-badge">
+                            Status: EVALUATING
+                        </span>
+                    </div>
+                </div>
+
+                <!-- 2. Dynamic Status Banner -->
+                <div id="res-status-banner" class="alert p-3 mb-4 rounded border d-flex align-items-start gap-3">
+                    <div class="fs-4 lh-1" id="res-banner-icon">&#9432;</div>
+                    <div class="flex-grow-1">
+                        <h6 class="fw-bold mb-1" id="res-banner-title">Assessment Evaluation</h6>
+                        <p class="small mb-0" id="res-banner-desc">Evaluation summary details will appear here.</p>
+                    </div>
+                </div>
+
+                <!-- 3. Overall Result Metric Cards -->
+                <div class="row g-3 mb-4">
+                    <!-- Metric 1: Verdict -->
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card p-3 text-center h-100">
+                            <div class="text-secondary small mb-1">Final Verdict</div>
+                            <div class="fs-5 fw-bold" id="res-verdict-text">--</div>
+                            <div class="small text-secondary" id="res-verdict-subtext">Judge0 Engine</div>
+                        </div>
+                    </div>
+                    <!-- Metric 2: Score -->
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card p-3 text-center h-100">
+                            <div class="text-secondary small mb-1">Score Obtained</div>
+                            <div class="fs-5 fw-bold text-light" id="res-score-text">-- / --</div>
+                            <div class="small text-secondary">Marks Awarded</div>
+                        </div>
+                    </div>
+                    <!-- Metric 3: Percentage -->
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card p-3 text-center h-100">
+                            <div class="text-secondary small mb-1">Score Percentage</div>
+                            <div class="fs-5 fw-bold text-primary" id="res-percentage-text">--%</div>
+                            <div class="small text-secondary">Accuracy Score</div>
+                        </div>
+                    </div>
+                    <!-- Metric 4: Test Cases -->
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card p-3 text-center h-100">
+                            <div class="text-secondary small mb-1">Test Cases</div>
+                            <div class="fs-5 fw-bold text-success" id="res-cases-text">-- / --</div>
+                            <div class="small text-secondary">Passed / Total</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Test Case Progress Bar -->
+                <div class="card bg-surface border-secondary border-opacity-25 p-3 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small fw-semibold text-light">Test Case Pass Rate</span>
+                        <span class="small font-monospace text-secondary" id="res-progress-label">0 of 0 test cases passed</span>
+                    </div>
+                    <div class="progress bg-darker" style="height: 10px;">
+                        <div id="res-progress-bar" class="progress-bar bg-success" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+
+                <!-- 5. Execution Statistics Strip -->
+                <div class="p-3 bg-darker rounded border border-secondary border-opacity-25 d-flex align-items-center justify-content-between flex-wrap gap-3 text-secondary small mb-4">
+                    <div>
+                        <span>Execution Time:</span>
+                        <strong class="text-light ms-1" id="res-stat-time">-- s</strong>
+                    </div>
+                    <div>
+                        <span>Peak Memory:</span>
+                        <strong class="text-light ms-1" id="res-stat-memory">-- KB</strong>
+                    </div>
+                    <div>
+                        <span>Time Taken:</span>
+                        <strong class="text-light ms-1" id="res-stat-duration">--</strong>
+                    </div>
+                    <div>
+                        <span>Evaluated At:</span>
+                        <strong class="text-light ms-1" id="res-stat-submitted">--</strong>
+                    </div>
+                </div>
+
+                <!-- 6. Compiler / Runtime Diagnostics Output (Only shown if error_output exists) -->
+                <div id="res-error-output-card" class="mb-4 d-none">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold text-danger mb-0 d-flex align-items-center gap-2">
+                            <span>&#9888;</span> Execution & Compiler Diagnostics Output
+                        </h6>
+                        <span class="badge bg-danger-subtle text-danger border border-danger small">Diagnostic Log</span>
+                    </div>
+                    <pre class="bg-darker text-danger-subtle p-3 rounded border border-danger border-opacity-25 font-monospace small mb-0" style="max-height: 250px; overflow-y: auto;" id="res-error-output-text"></pre>
+                </div>
+
+                <!-- 7. Submitted Source Code -->
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="fw-bold text-light mb-0">Submitted Source Code</h5>
+                        <button type="button" class="btn btn-outline-secondary btn-sm px-3" id="copy-code-btn" onclick="copySubmittedCode()">
+                            Copy Code
+                        </button>
+                    </div>
+                    <pre class="code-view" id="res-source-code">Loading source code...</pre>
+                </div>
+
+                <!-- 8. Problem Statement & Sample Test Cases Reference -->
+                <div class="card bg-surface border-secondary border-opacity-25 p-3 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold text-light mb-0">Problem Statement Reference</h6>
+                        <span class="badge bg-secondary-subtle text-light small border border-secondary" id="res-problem-marks-badge">-- Marks</span>
+                    </div>
+                    <p class="small text-secondary mb-3" id="res-problem-desc">--</p>
+
+                    <div class="row g-3 small mb-3">
+                        <div class="col-md-6">
+                            <strong class="text-light">Sample Input:</strong>
+                            <pre class="bg-darker p-2 rounded text-light-subtle mt-1 mb-0 font-monospace" id="res-sample-input">--</pre>
+                        </div>
+                        <div class="col-md-6">
+                            <strong class="text-light">Sample Output:</strong>
+                            <pre class="bg-darker p-2 rounded text-light-subtle mt-1 mb-0 font-monospace" id="res-sample-output">--</pre>
+                        </div>
+                    </div>
+
+                    <!-- Non-Hidden Sample Cases Details -->
+                    <div class="border-top border-secondary border-opacity-25 pt-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="small fw-semibold text-light">Public Sample Test Cases:</span>
+                            <span class="badge bg-success-subtle text-success small border border-success">Client-Visible</span>
+                        </div>
+                        <div id="res-sample-cases-list" class="d-flex flex-column gap-2">
+                            <div class="text-secondary small">No sample test cases available.</div>
+                        </div>
+                    </div>
+
+                    <!-- Security Notice regarding hidden cases -->
+                    <div class="mt-3 p-2 rounded bg-darker border border-secondary border-opacity-25 small text-secondary d-flex align-items-center gap-2">
+                        <span class="text-info">&#9432;</span>
+                        <span><strong>Evaluation Confidentiality:</strong> Hidden test cases are evaluated securely on the Judge0 engine and are strictly excluded from client responses to preserve assessment integrity.</span>
+                    </div>
+                </div>
+
+                <!-- 9. Student Action Navigation CTAs -->
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 pt-3 border-top border-secondary border-opacity-25">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <a href="/coding/" class="btn btn-outline-light btn-sm px-3">
+                            &larr; Back to Coding
+                        </a>
+                        <a href="/coding/setup/" class="btn btn-outline-warning btn-sm px-3" id="res-retake-btn">
+                            &#8634; Try Another Problem
+                        </a>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-outline-info btn-sm px-3" onclick="window.print()">
+                            Print Result
+                        </button>
+                        <a href="/dashboard/" class="btn btn-primary btn-sm px-4 fw-semibold">
+                            Go to Dashboard &rarr;
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const ATTEMPT_ID = {{ attempt_id }};
+
+// Status Visual Configurations
+const STATUS_CONFIG = {
+    'ACCEPTED': {
+        badgeClass: 'bg-success',
+        bannerClass: 'alert-success border-success bg-opacity-10 text-success',
+        icon: '&#10004;',
+        verdictColor: 'text-success',
+        title: 'Accepted — Full Solution Passed',
+        message: 'Congratulations! Your solution passed all test cases within the required time and memory constraints.'
+    },
+    'PARTIAL': {
+        badgeClass: 'bg-warning text-dark',
+        bannerClass: 'alert-warning border-warning bg-opacity-10 text-warning',
+        icon: '&#9888;',
+        verdictColor: 'text-warning',
+        title: 'Partially Accepted',
+        message: 'Your solution passed some test cases, but failed others. Partial score has been awarded.'
+    },
+    'WRONG_ANSWER': {
+        badgeClass: 'bg-danger',
+        bannerClass: 'alert-danger border-danger bg-opacity-10 text-danger',
+        icon: '&#10008;',
+        verdictColor: 'text-danger',
+        title: 'Wrong Answer',
+        message: 'Your solution produced output that did not match the expected output on one or more test cases.'
+    },
+    'COMPILATION_ERROR': {
+        badgeClass: 'bg-danger',
+        bannerClass: 'alert-danger border-danger bg-opacity-10 text-danger',
+        icon: '&#9888;',
+        verdictColor: 'text-danger',
+        title: 'Compilation Error',
+        message: 'Your code failed to compile. Review the compiler diagnostic output below for syntax or type errors.'
+    },
+    'RUNTIME_ERROR': {
+        badgeClass: 'bg-danger',
+        bannerClass: 'alert-danger border-danger bg-opacity-10 text-danger',
+        icon: '&#9889;',
+        verdictColor: 'text-danger',
+        title: 'Runtime Error',
+        message: 'Your code crashed or threw an unhandled exception during execution. Check for invalid indexing or memory boundaries.'
+    },
+    'TIME_LIMIT_EXCEEDED': {
+        badgeClass: 'bg-warning text-dark',
+        bannerClass: 'alert-warning border-warning bg-opacity-10 text-warning',
+        icon: '&#9201;',
+        verdictColor: 'text-warning',
+        title: 'Time Limit Exceeded (TLE)',
+        message: 'Your code did not complete execution within the CPU time limit. Optimize your algorithm time complexity.'
+    },
+    'SERVICE_UNAVAILABLE': {
+        badgeClass: 'bg-secondary',
+        bannerClass: 'alert-secondary border-secondary bg-opacity-10 text-secondary',
+        icon: '&#9729;',
+        verdictColor: 'text-secondary',
+        title: 'Judging Service Unavailable',
+        message: 'The Judge0 code execution engine was temporarily unreachable. Your solution was securely saved.'
+    },
+    'PENDING': {
+        badgeClass: 'bg-info text-dark',
+        bannerClass: 'alert-info border-info bg-opacity-10 text-info',
+        icon: '&#8987;',
+        verdictColor: 'text-info',
+        title: 'Evaluation Pending',
+        message: 'Your solution has been submitted and is queued for automated test case evaluation.'
+    }
+};
+
+function safeEscape(str) {
+    if (str === null || str === undefined) return '';
+    const div = document.createElement('div');
+    div.textContent = String(str);
+    return div.innerHTML;
+}
+
+function formatDuration(seconds) {
+    if (!seconds || seconds <= 0) return '0m 0s';
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}m ${secs}s`;
+}
+
+function getApiHeaders() {
+    const headers = { 'Content-Type': 'application/json' };
+    if (typeof Auth !== 'undefined' && Auth.getAccessToken) {
+        const access = Auth.getAccessToken();
+        if (access) headers['Authorization'] = `Bearer ${access}`;
+    }
+    const guestSession = localStorage.getItem('skillbyte_guest_session_id');
+    if (guestSession) {
+        headers['X-Session-ID'] = guestSession;
+    }
+    return headers;
+}
+
+async function loadResult() {
+    const loadingEl = document.getElementById('result-loading');
+    const containerEl = document.getElementById('result-container');
+    const errorEl = document.getElementById('result-error');
+
+    try {
+        const guestSession = localStorage.getItem('skillbyte_guest_session_id');
+        let url = `/api/assessments/coding/${ATTEMPT_ID}/result/`;
+        if (guestSession) url += `?session_id=${encodeURIComponent(guestSession)}`;
+
+        const res = await fetch(url, { headers: getApiHeaders() });
+        const data = await res.json();
+
+        if (res.ok) {
+            renderResultUI(data);
+            loadingEl.classList.add('d-none');
+            containerEl.classList.remove('d-none');
+        } else {
+            loadingEl.classList.add('d-none');
+            document.getElementById('result-error-msg').textContent = data.error || "Could not retrieve assessment results.";
+            errorEl.classList.remove('d-none');
+        }
+    } catch (err) {
+        console.error("Failed to load result:", err);
+        loadingEl.classList.add('d-none');
+        document.getElementById('result-error-msg').textContent = "Network error: Unable to connect to SkillByte assessment service.";
+        errorEl.classList.remove('d-none');
+    }
+}
+
+function renderResultUI(data) {
+    const subStatus = data.submission_status || 'PENDING';
+    const cfg = STATUS_CONFIG[subStatus] || STATUS_CONFIG['PENDING'];
+    const q = data.question || {};
+
+    // 1. Header Information
+    document.getElementById('res-problem-title').textContent = q.title || 'Coding Problem';
+    document.getElementById('res-header-category').textContent = data.category || q.category || 'Programming';
+    document.getElementById('res-header-difficulty').textContent = (data.difficulty || q.difficulty || 'Easy').toUpperCase();
+    document.getElementById('res-header-lang').textContent = (data.language || 'Python').toUpperCase();
+    
+    const submittedDate = data.submitted_at ? new Date(data.submitted_at).toLocaleString() : 'N/A';
+    document.getElementById('res-meta-text').textContent = `Attempt #${data.attempt_id} • Evaluated via Judge0 Engine • Submitted at ${submittedDate}`;
+
+    // Header Status Badge
+    const statusBadge = document.getElementById('res-status-badge');
+    statusBadge.className = `badge status-badge-lg fw-semibold ${cfg.badgeClass}`;
+    statusBadge.textContent = `Status: ${subStatus.replace(/_/g, ' ')}`;
+
+    // 2. Status Banner
+    const banner = document.getElementById('res-status-banner');
+    banner.className = `alert p-3 mb-4 rounded border d-flex align-items-start gap-3 ${cfg.bannerClass}`;
+    document.getElementById('res-banner-icon').innerHTML = cfg.icon;
+    document.getElementById('res-banner-title').textContent = cfg.title;
+    document.getElementById('res-banner-desc').textContent = cfg.message;
+
+    // 3. Metric Cards
+    const verdictEl = document.getElementById('res-verdict-text');
+    verdictEl.textContent = subStatus.replace(/_/g, ' ');
+    verdictEl.className = `fs-5 fw-bold ${cfg.verdictColor}`;
+
+    const scoreObtained = data.obtained_marks !== undefined ? Number(data.obtained_marks) : 0;
+    const maxScore = data.total_marks !== undefined ? Number(data.total_marks) : 10;
+    document.getElementById('res-score-text').textContent = `${scoreObtained} / ${maxScore}`;
+
+    const percentage = data.percentage !== undefined ? Number(data.percentage) : (maxScore ? (scoreObtained / maxScore * 100) : 0);
+    document.getElementById('res-percentage-text').textContent = `${Math.round(percentage)}%`;
+
+    const passedCases = data.passed_test_cases !== undefined ? Number(data.passed_test_cases) : 0;
+    const totalCases = data.total_test_cases !== undefined ? Number(data.total_test_cases) : 0;
+    document.getElementById('res-cases-text').textContent = `${passedCases} / ${totalCases}`;
+
+    // 4. Test Case Progress Bar
+    const progressLabel = document.getElementById('res-progress-label');
+    const progressBar = document.getElementById('res-progress-bar');
+    progressLabel.textContent = `${passedCases} of ${totalCases} test cases passed (${totalCases > 0 ? Math.round((passedCases / totalCases) * 100) : 0}%)`;
+
+    const passRate = totalCases > 0 ? (passedCases / totalCases) * 100 : 0;
+    progressBar.style.width = `${passRate}%`;
+    progressBar.setAttribute('aria-valuenow', passRate);
+
+    if (passRate === 100) {
+        progressBar.className = 'progress-bar bg-success';
+    } else if (passRate > 0) {
+        progressBar.className = 'progress-bar bg-warning';
+    } else {
+        progressBar.className = 'progress-bar bg-danger';
+        progressBar.style.width = '100%'; // Show red bar when 0%
+    }
+
+    // 5. Execution Statistics
+    if (data.execution_time !== null && data.execution_time !== undefined) {
+        document.getElementById('res-stat-time').textContent = `${Number(data.execution_time).toFixed(3)} s`;
+    } else {
+        document.getElementById('res-stat-time').textContent = 'N/A';
+    }
+
+    if (data.memory_usage !== null && data.memory_usage !== undefined && data.memory_usage > 0) {
+        document.getElementById('res-stat-memory').textContent = `${Math.round(Number(data.memory_usage)).toLocaleString()} KB`;
+    } else {
+        document.getElementById('res-stat-memory').textContent = 'N/A';
+    }
+
+    document.getElementById('res-stat-duration').textContent = formatDuration(data.time_taken_seconds || 0);
+    document.getElementById('res-stat-submitted').textContent = submittedDate;
+
+    // 6. Diagnostics / Error Output (Only show if non-empty)
+    const errorCard = document.getElementById('res-error-output-card');
+    const errorText = document.getElementById('res-error-output-text');
+    if (data.error_output && data.error_output.trim()) {
+        errorText.textContent = data.error_output;
+        errorCard.classList.remove('d-none');
+    } else {
+        errorCard.classList.add('d-none');
+    }
+
+    // 7. Submitted Source Code
+    document.getElementById('res-source-code').textContent = data.source_code || '// No source code recorded';
+
+    // 8. Problem Reference & Sample Test Cases (Only non-hidden cases)
+    document.getElementById('res-problem-desc').textContent = q.description || 'No description provided.';
+    document.getElementById('res-problem-marks-badge').textContent = `${maxScore} Marks`;
+    document.getElementById('res-sample-input').textContent = q.sample_input || 'None';
+    document.getElementById('res-sample-output').textContent = q.sample_output || 'None';
+
+    const sampleList = document.getElementById('res-sample-cases-list');
+    if (q.sample_test_cases && q.sample_test_cases.length > 0) {
+        sampleList.innerHTML = q.sample_test_cases.map((tc, idx) => `
+            <div class="card bg-darker border-secondary border-opacity-25 p-2 small font-monospace">
+                <div class="d-flex justify-content-between text-secondary mb-1">
+                    <span>Sample Case #${idx + 1}</span>
+                    <span class="badge bg-secondary border border-secondary">${tc.marks || 1} Marks</span>
+                </div>
+                <div class="text-light-subtle">
+                    <div><strong>Input:</strong> <code>${safeEscape(tc.input_data)}</code></div>
+                    <div><strong>Expected Output:</strong> <code>${safeEscape(tc.expected_output)}</code></div>
+                </div>
+            </div>
+        `).join('');
+    } else {
+        sampleList.innerHTML = `<div class="text-secondary small">No sample test cases specified.</div>`;
+    }
+}
+
+function copySubmittedCode() {
+    const code = document.getElementById('res-source-code').textContent;
+    const btn = document.getElementById('copy-code-btn');
+    navigator.clipboard.writeText(code).then(() => {
+        const originalText = btn.textContent;
+        btn.textContent = "Copied!";
+        btn.classList.remove('btn-outline-secondary');
+        btn.classList.add('btn-success');
+        setTimeout(() => {
+            btn.textContent = originalText;
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-secondary');
+        }, 2000);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', loadResult);
+</script>
+{% endblock %}

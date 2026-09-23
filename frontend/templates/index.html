@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}SKILLBYTE — Phase 1 Initialized{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <!-- Hero Card -->
+        <div class="card shadow-lg border-0 bg-glass text-light mb-4">
+            <div class="card-body p-5">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+                    <div>
+                        <span class="badge bg-primary-subtle text-primary border border-primary px-3 py-1 mb-2">Phase 1: Project Setup Complete</span>
+                        <h1 class="display-5 fw-bold mb-1">SKILLBYTE</h1>
+                        <p class="lead text-secondary mb-0">"Where Theory Meets Practice"</p>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-success-subtle text-success fs-6 px-3 py-2 border border-success">
+                            ✓ Django 5.2 + DRF Active
+                        </span>
+                    </div>
+                </div>
+
+                <p class="text-light-50 fs-5 mb-4">
+                    SkillByte is a hybrid assessment platform bridging theoretical MCQ evaluations and live code executions into a single, unified environment.
+                </p>
+
+                <!-- Quick Action Buttons -->
+                <div class="d-flex align-items-center flex-wrap gap-3 mb-4">
+                    <a href="/register/" class="btn btn-primary px-4 py-2 fw-semibold">Register as Student</a>
+                    <a href="/login/" class="btn btn-outline-light px-4 py-2">Sign In</a>
+                    <button class="btn btn-outline-warning px-4 py-2" onclick="Auth.setGuestMode(); window.location.href='/dashboard/';">Continue as Guest</button>
+                </div>
+
+                <hr class="border-secondary opacity-25 my-4">
+
+                <!-- System Readiness & Health Checker Card -->
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="card bg-surface border border-secondary border-opacity-25 h-100">
+                            <div class="card-body">
+                                <h5 class="card-title text-primary fw-semibold mb-3">Core Platform Status</h5>
+                                <ul class="list-unstyled mb-0 d-flex flex-column gap-2 text-secondary small">
+                                    <li class="d-flex justify-content-between align-items-center">
+                                        <span>Backend Framework:</span>
+                                        <span class="text-light fw-medium">Django 5.2 (REST Framework)</span>
+                                    </li>
+                                    <li class="d-flex justify-content-between align-items-center">
+                                        <span>Authentication:</span>
+                                        <span class="text-success fw-medium">JWT (Access + Refresh + Blacklist)</span>
+                                    </li>
+                                    <li class="d-flex justify-content-between align-items-center">
+                                        <span>User Roles:</span>
+                                        <span class="text-light fw-medium">STUDENT, ADMIN, GUEST</span>
+                                    </li>
+                                    <li class="d-flex justify-content-between align-items-center">
+                                        <span>Primary Database:</span>
+                                        <span class="text-light fw-medium">PostgreSQL (Django ORM)</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card bg-surface border border-secondary border-opacity-25 h-100">
+                            <div class="card-body">
+                                <h5 class="card-title text-primary fw-semibold mb-3">Health Check API</h5>
+                                <div class="p-3 bg-darker rounded border border-secondary border-opacity-25 mb-3 font-monospace small">
+                                    <span class="text-info">GET</span> <a href="/api/health/" target="_blank" class="text-light text-decoration-none">/api/health/</a>
+                                </div>
+                                <div id="health-live-response" class="p-3 bg-darker rounded border border-secondary border-opacity-25 font-monospace small text-muted">
+                                    Connecting to API...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 p-3 bg-darker rounded border border-secondary border-opacity-25 d-flex align-items-center justify-content-between flex-wrap gap-2 text-secondary small">
+                    <span>Active Phase: <strong>Phase 2 (Authentication + User Roles)</strong> <span class="badge bg-success ms-1">Active</span></span>
+                    <span>Next: <em>Phase 3 (Database Models & Migrations)</em></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

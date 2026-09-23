@@ -1,0 +1,458 @@
+{% extends 'base.html' %}
+
+{% block title %}Platform & Assessment Analytics — SKILLBYTE Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .metric-card {
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .metric-card:hover {
+        transform: translateY(-2px);
+        border-color: rgba(59, 130, 246, 0.4);
+    }
+    .metric-icon-box {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+    .verdict-badge {
+        font-size: 0.85rem;
+        padding: 6px 12px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .progress-thin {
+        height: 8px;
+        border-radius: 4px;
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-11 col-xl-10">
+
+        <!-- Access Denied State (shown if 401/403) -->
+        <div id="access-denied-view" class="d-none text-center py-5">
+            <div class="card bg-dark border-danger border-opacity-50 p-5 shadow-lg mx-auto" style="max-width: 540px;">
+                <div class="text-danger mb-3">
+                    <i class="bi bi-shield-x fs-1"></i>
+                </div>
+                <h3 class="fw-bold text-light mb-2">Access Denied</h3>
+                <p class="text-secondary mb-4">
+                    The Platform Analytics dashboard is strictly restricted to platform administrators.
+                    Your current account does not have sufficient permissions to view this resource.
+                </p>
+                <div class="d-flex justify-content-center gap-2">
+                    <a href="/dashboard/" class="btn btn-outline-info">Return to Dashboard</a>
+                    <a href="/login/" class="btn btn-primary">Login as Admin</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Analytics Dashboard (shown when authorized) -->
+        <div id="analytics-main-view">
+            <!-- Header -->
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+                <div>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-1 small">
+                            <li class="breadcrumb-item"><a href="/dashboard/" class="text-info text-decoration-none">&larr; Dashboard</a></li>
+                            <li class="breadcrumb-item active text-secondary" aria-current="page">Admin Analytics</li>
+                        </ol>
+                    </nav>
+                    <h3 class="fw-bold text-light mb-1">
+                        <i class="bi bi-graph-up-arrow text-info me-2"></i>Platform & Assessment Analytics
+                    </h3>
+                    <p class="text-secondary small mb-0">
+                        Real-time student diagnostic metrics, completion funnels, and assessment difficulty analysis.
+                    </p>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="/admin/questions/" class="btn btn-outline-warning btn-sm">
+                        <i class="bi bi-shield-lock me-1"></i>Question Bank
+                    </a>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="loadAnalytics()" title="Refresh metrics">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div id="analytics-loading" class="text-center py-5">
+                <div class="spinner-border text-info" role="status"></div>
+                <div class="text-secondary mt-2 small">Aggregating platform metrics and test verdicts...</div>
+            </div>
+
+            <!-- Content Area (Initially hidden while loading) -->
+            <div id="analytics-content" class="d-none">
+
+                <!-- Row 1: KPI Cards -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card metric-card p-3 h-100">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="text-secondary small fw-semibold text-uppercase">Students</span>
+                                <div class="metric-icon-box bg-primary bg-opacity-20 text-primary">
+                                    <i class="bi bi-people-fill"></i>
+                                </div>
+                            </div>
+                            <div class="fs-3 fw-bold text-light" id="kpi-students">0</div>
+                            <div class="small text-secondary">Active registered learners</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card metric-card p-3 h-100">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="text-secondary small fw-semibold text-uppercase">Assessments</span>
+                                <div class="metric-icon-box bg-success bg-opacity-20 text-success">
+                                    <i class="bi bi-journal-check"></i>
+                                </div>
+                            </div>
+                            <div class="fs-3 fw-bold text-light" id="kpi-completed-attempts">0</div>
+                            <div class="small text-secondary" id="kpi-attempts-breakdown">0 initiated</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card metric-card p-3 h-100">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="text-secondary small fw-semibold text-uppercase">Completion Rate</span>
+                                <div class="metric-icon-box bg-info bg-opacity-20 text-info">
+                                    <i class="bi bi-speedometer2"></i>
+                                </div>
+                            </div>
+                            <div class="fs-3 fw-bold text-info" id="kpi-completion-rate">0%</div>
+                            <div class="small text-secondary">Initiated vs completed attempts</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card metric-card p-3 h-100">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="text-secondary small fw-semibold text-uppercase">Avg Score</span>
+                                <div class="metric-icon-box bg-warning bg-opacity-20 text-warning">
+                                    <i class="bi bi-award-fill"></i>
+                                </div>
+                            </div>
+                            <div class="fs-3 fw-bold text-warning" id="kpi-avg-score">0%</div>
+                            <div class="small text-secondary">Across all completed assessments</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 2: Assessment Types & Coding Verdict Distribution -->
+                <div class="row g-4 mb-4">
+                    <!-- MCQ vs Coding Performance -->
+                    <div class="col-lg-6">
+                        <div class="card bg-dark border-secondary border-opacity-25 shadow-sm h-100">
+                            <div class="card-header bg-black bg-opacity-25 border-secondary border-opacity-25">
+                                <span class="fw-semibold text-light"><i class="bi bi-pie-chart-fill me-2 text-primary"></i>Assessment Mode Breakdown</span>
+                            </div>
+                            <div class="card-body p-4">
+                                <!-- MCQ Metric -->
+                                <div class="mb-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="text-light fw-medium"><i class="bi bi-ui-checks me-2 text-info"></i>Theory (MCQ) Assessments</span>
+                                        <span class="text-info fw-bold" id="mcq-completed-count">0 completed</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between text-secondary small mb-2">
+                                        <span>Average Score</span>
+                                        <span id="mcq-avg-score">0%</span>
+                                    </div>
+                                    <div class="progress progress-thin">
+                                        <div class="progress-bar bg-info" id="mcq-progress-bar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Coding Metric -->
+                                <div class="mb-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="text-light fw-medium"><i class="bi bi-code-slash me-2 text-success"></i>Live Coding Assessments</span>
+                                        <span class="text-success fw-bold" id="coding-completed-count">0 completed</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between text-secondary small mb-2">
+                                        <span>Average Score</span>
+                                        <span id="coding-avg-score">0%</span>
+                                    </div>
+                                    <div class="progress progress-thin">
+                                        <div class="progress-bar bg-success" id="coding-progress-bar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Completion Conversion -->
+                                <div class="pt-3 border-top border-secondary border-opacity-25">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-secondary small">Completion Conversion</span>
+                                        <span class="badge bg-secondary" id="conversion-summary">0 / 0 completed</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Coding Verdict Breakdown -->
+                    <div class="col-lg-6">
+                        <div class="card bg-dark border-secondary border-opacity-25 shadow-sm h-100">
+                            <div class="card-header bg-black bg-opacity-25 border-secondary border-opacity-25">
+                                <span class="fw-semibold text-light"><i class="bi bi-terminal-check me-2 text-success"></i>Judge0 Coding Verdict Distribution</span>
+                            </div>
+                            <div class="card-body p-4">
+                                <div class="row g-2 mb-3">
+                                    <div class="col-6">
+                                        <div class="p-2 rounded bg-success bg-opacity-10 border border-success border-opacity-25 d-flex justify-content-between align-items-center">
+                                            <span class="text-success small fw-semibold"><i class="bi bi-check-circle-fill me-1"></i>Accepted (AC)</span>
+                                            <span class="fw-bold text-light" id="verdict-ac">0</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="p-2 rounded bg-danger bg-opacity-10 border border-danger border-opacity-25 d-flex justify-content-between align-items-center">
+                                            <span class="text-danger small fw-semibold"><i class="bi bi-x-circle-fill me-1"></i>Wrong Answer (WA)</span>
+                                            <span class="fw-bold text-light" id="verdict-wa">0</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="p-2 rounded bg-warning bg-opacity-10 border border-warning border-opacity-25 d-flex justify-content-between align-items-center">
+                                            <span class="text-warning small fw-semibold"><i class="bi bi-clock-history me-1"></i>Time Limit (TLE)</span>
+                                            <span class="fw-bold text-light" id="verdict-tle">0</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="p-2 rounded bg-warning bg-opacity-10 border border-warning border-opacity-25 d-flex justify-content-between align-items-center">
+                                            <span class="text-warning small fw-semibold"><i class="bi bi-memory me-1"></i>Memory Limit (MLE)</span>
+                                            <span class="fw-bold text-light" id="verdict-mle">0</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="p-2 rounded bg-secondary bg-opacity-10 border border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
+                                            <span class="text-light small fw-semibold"><i class="bi bi-gear-fill me-1"></i>Compilation Error (CE)</span>
+                                            <span class="fw-bold text-light" id="verdict-ce">0</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="p-2 rounded bg-danger bg-opacity-10 border border-danger border-opacity-25 d-flex justify-content-between align-items-center">
+                                            <span class="text-danger small fw-semibold"><i class="bi bi-bug-fill me-1"></i>Runtime Error (RTE)</span>
+                                            <span class="fw-bold text-light" id="verdict-rte">0</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-secondary small mt-2">
+                                    Total Submissions Evaluated: <strong class="text-light" id="verdict-total">0</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 3: Category Performance -->
+                <div class="card bg-dark border-secondary border-opacity-25 shadow-sm mb-4">
+                    <div class="card-header bg-black bg-opacity-25 border-secondary border-opacity-25">
+                        <span class="fw-semibold text-light"><i class="bi bi-layers-fill me-2 text-warning"></i>Category Performance & Pass Rates</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover mb-0 align-middle">
+                            <thead class="text-secondary small border-secondary border-opacity-25">
+                                <tr>
+                                    <th class="ps-3">Category</th>
+                                    <th class="text-center">Total Attempts</th>
+                                    <th class="text-center">Completed</th>
+                                    <th class="text-center">Pass Rate %</th>
+                                    <th class="text-end pe-3">Average Score %</th>
+                                </tr>
+                            </thead>
+                            <tbody id="category-table-body">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Row 4: Top 5 Hardest Questions -->
+                <div class="card bg-dark border-secondary border-opacity-25 shadow-sm">
+                    <div class="card-header bg-black bg-opacity-25 border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
+                        <span class="fw-semibold text-light"><i class="bi bi-fire me-2 text-danger"></i>Top 5 Most Challenging Questions</span>
+                        <span class="text-secondary small">High failure rate diagnostic</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover mb-0 align-middle">
+                            <thead class="text-secondary small border-secondary border-opacity-25">
+                                <tr>
+                                    <th class="ps-3" style="width: 70px;">ID</th>
+                                    <th>Question Title</th>
+                                    <th style="width: 90px;">Type</th>
+                                    <th>Category</th>
+                                    <th class="text-center">Attempts</th>
+                                    <th class="text-center">Failure Rate</th>
+                                    <th class="text-end pe-3">Average Score</th>
+                                </tr>
+                            </thead>
+                            <tbody id="hardest-table-body">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.Auth) {
+            Auth.updateNavUI();
+            const user = Auth.getUser();
+            if (!Auth.isLoggedIn() || (user && user.role !== 'ADMIN')) {
+                showAccessDenied();
+                return;
+            }
+        }
+        loadAnalytics();
+    });
+
+    function showAccessDenied() {
+        document.getElementById('analytics-main-view').classList.add('d-none');
+        document.getElementById('access-denied-view').classList.remove('d-none');
+    }
+
+    async function loadAnalytics() {
+        const loading = document.getElementById('analytics-loading');
+        const content = document.getElementById('analytics-content');
+
+        if (loading) loading.classList.remove('d-none');
+        if (content) content.classList.add('d-none');
+
+        try {
+            const res = await (window.Auth ? Auth.fetchWithAuth('/api/admin/analytics/') : fetch('/api/admin/analytics/'));
+
+            if (res.status === 401 || res.status === 403) {
+                showAccessDenied();
+                return;
+            }
+
+            if (!res.ok) {
+                throw new Error(`Failed to load analytics: ${res.status}`);
+            }
+
+            const data = await res.json();
+            populateDashboard(data);
+
+            if (loading) loading.classList.add('d-none');
+            if (content) content.classList.remove('d-none');
+
+        } catch (err) {
+            console.error('Error fetching admin analytics:', err);
+            if (loading) {
+                loading.innerHTML = `
+                    <div class="text-danger py-4">
+                        <i class="bi bi-exclamation-triangle-fill fs-3 d-block mb-2"></i>
+                        Could not load analytics metrics. Please ensure you are logged in as an Administrator.
+                    </div>
+                `;
+            }
+        }
+    }
+
+    function populateDashboard(data) {
+        const u = data.users || {};
+        const att = data.attempts || {};
+        const sc = data.scoring || {};
+        const v = data.coding_verdicts || {};
+
+        // KPIs
+        document.getElementById('kpi-students').textContent = u.total_students || 0;
+        document.getElementById('kpi-completed-attempts').textContent = att.completed_attempts || 0;
+        document.getElementById('kpi-attempts-breakdown').textContent = `${att.total_initiated || 0} total initiated`;
+        document.getElementById('kpi-completion-rate').textContent = `${att.completion_rate_percent || 0}%`;
+        document.getElementById('kpi-avg-score').textContent = `${sc.platform_average_percent || 0}%`;
+
+        // MCQ breakdown
+        document.getElementById('mcq-completed-count').textContent = `${att.mcq_completed || 0} completed`;
+        document.getElementById('mcq-avg-score').textContent = `${sc.mcq_average_percent || 0}%`;
+        document.getElementById('mcq-progress-bar').style.width = `${Math.min(sc.mcq_average_percent || 0, 100)}%`;
+
+        // Coding breakdown
+        document.getElementById('coding-completed-count').textContent = `${att.coding_completed || 0} completed`;
+        document.getElementById('coding-avg-score').textContent = `${sc.coding_average_percent || 0}%`;
+        document.getElementById('coding-progress-bar').style.width = `${Math.min(sc.coding_average_percent || 0, 100)}%`;
+
+        // Conversion
+        document.getElementById('conversion-summary').textContent = `${att.completed_attempts || 0} / ${att.total_initiated || 0} completed (${att.completion_rate_percent || 0}%)`;
+
+        // Verdicts
+        document.getElementById('verdict-ac').textContent = v.ACCEPTED || 0;
+        document.getElementById('verdict-wa').textContent = v.WRONG_ANSWER || 0;
+        document.getElementById('verdict-tle').textContent = v.TIME_LIMIT_EXCEEDED || 0;
+        document.getElementById('verdict-mle').textContent = v.MEMORY_LIMIT_EXCEEDED || 0;
+        document.getElementById('verdict-ce').textContent = v.COMPILATION_ERROR || 0;
+        document.getElementById('verdict-rte').textContent = v.RUNTIME_ERROR || 0;
+        document.getElementById('verdict-total').textContent = v.total_submissions || 0;
+
+        // Categories Table
+        const catTbody = document.getElementById('category-table-body');
+        const catList = data.categories || [];
+        if (catList.length === 0) {
+            catTbody.innerHTML = `<tr><td colspan="5" class="text-center text-secondary py-3">No category data recorded yet.</td></tr>`;
+        } else {
+            catTbody.innerHTML = catList.map(c => `
+                <tr>
+                    <td class="ps-3 fw-semibold text-light">${escapeHtml(c.category)}</td>
+                    <td class="text-center font-monospace">${c.total_attempts}</td>
+                    <td class="text-center font-monospace">${c.completed_attempts}</td>
+                    <td class="text-center">
+                        <span class="badge ${c.pass_rate_percent >= 50 ? 'bg-success' : 'bg-warning text-dark'} font-monospace">
+                            ${c.pass_rate_percent}%
+                        </span>
+                    </td>
+                    <td class="text-end pe-3 font-monospace text-info">${c.average_score_percent}%</td>
+                </tr>
+            `).join('');
+        }
+
+        // Hardest Questions Table
+        const hardTbody = document.getElementById('hardest-table-body');
+        const hardList = data.hardest_questions || [];
+        if (hardList.length === 0) {
+            hardTbody.innerHTML = `<tr><td colspan="7" class="text-center text-secondary py-3">No question attempts recorded yet.</td></tr>`;
+        } else {
+            hardTbody.innerHTML = hardList.map(q => `
+                <tr>
+                    <td class="ps-3 font-monospace text-secondary">#${q.question_id}</td>
+                    <td><span class="text-light fw-medium">${escapeHtml(q.title)}</span></td>
+                    <td>
+                        <span class="badge ${q.question_type === 'CODE' ? 'bg-purple' : 'bg-primary'} small" style="${q.question_type === 'CODE' ? 'background-color: #6f42c1 !important;' : ''}">
+                            ${q.question_type}
+                        </span>
+                    </td>
+                    <td class="text-secondary small">${escapeHtml(q.category)}</td>
+                    <td class="text-center font-monospace">${q.total_attempts}</td>
+                    <td class="text-center">
+                        <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50 font-monospace">
+                            ${q.failure_rate_percent}%
+                        </span>
+                    </td>
+                    <td class="text-end pe-3 font-monospace text-warning">${q.average_score_percent}%</td>
+                </tr>
+            `).join('');
+        }
+    }
+</script>
+{% endblock %}
+

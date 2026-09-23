@@ -1,0 +1,404 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard Foundation — SKILLBYTE{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="card shadow-lg border-0 bg-glass text-light mb-4">
+            <div class="card-body p-4 p-md-5">
+                <!-- User Header -->
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <div id="user-avatar" class="rounded-circle bg-primary bg-opacity-25 border border-primary d-flex align-items-center justify-content-center text-primary fw-bold fs-3" style="width: 60px; height: 60px;">
+                            SB
+                        </div>
+                        <div>
+                            <div class="d-flex align-items-center gap-2">
+                                <h3 id="dash-user-name" class="fw-bold mb-0">Loading user...</h3>
+                                <span id="dash-user-role-badge" class="badge bg-secondary">...</span>
+                            </div>
+                            <p id="dash-user-email" class="text-secondary small mb-0">checking session...</p>
+                        </div>
+                    </div>
+                    <div>
+                        <button id="dash-logout-btn" class="btn btn-outline-danger btn-sm" onclick="Auth.logout()">Sign Out</button>
+                    </div>
+                </div>
+
+                <hr class="border-secondary opacity-25 my-4">
+
+                <!-- Progress Overview Cards (Phase 8) -->
+                <!-- Progress Overview Cards (Phase 8 & 10) -->
+                <div id="dashboard-progress-section" class="mb-4 d-none">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h5 class="fw-bold text-light mb-0">Progress Overview</h5>
+                        <a href="/attempts/" class="btn btn-outline-info btn-sm">Full Attempt History &rarr;</a>
+                        <h5 class="fw-bold text-light mb-0">Progress Overview & Unified Score</h5>
+                        <div class="d-flex align-items-center gap-2">
+                            <a href="/leaderboard/" class="btn btn-outline-warning btn-sm"><i class="bi bi-trophy-fill me-1"></i>Leaderboard</a>
+                            <a href="/attempts/" class="btn btn-outline-info btn-sm">Full Attempt History &rarr;</a>
+                        </div>
+                    </div>
+
+                    <!-- Unified Score Card (Phase 10) -->
+                    <div class="card bg-surface border border-info border-opacity-50 p-3 mb-3">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                            <div>
+                                <div class="text-secondary small fw-medium">Unified SkillByte Score (Best Score per Question)</div>
+                                <div class="d-flex align-items-baseline gap-2 mt-1">
+                                    <span id="dash-unified-score" class="fs-2 fw-bold text-light font-monospace">0.0</span>
+                                    <span class="text-muted small">pts</span>
+                                    <span id="dash-skill-badge" class="badge bg-secondary ms-2">Novice</span>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="text-end">
+                                    <div class="small text-secondary">Theory (MCQ): <strong class="text-primary font-monospace" id="dash-theory-score">0</strong> pts</div>
+                                    <div class="small text-secondary">Practical (Code): <strong class="text-info font-monospace" id="dash-coding-score">0</strong> pts</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-6 col-md-3">
+                            <div class="card bg-surface border border-secondary border-opacity-25 p-3 h-100">
+                                <div class="text-secondary small fw-medium mb-1">Total Attempts</div>
+                                <div id="dash-stat-total" class="fs-4 fw-bold text-light font-monospace">0</div>
+                                <div class="text-muted small">Theory & Code</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="card bg-surface border border-secondary border-opacity-25 p-3 h-100">
+                                <div class="text-secondary small fw-medium mb-1">Completed</div>
+                                <div id="dash-stat-completed" class="fs-4 fw-bold text-success font-monospace">0</div>
+                                <div class="text-muted small">Evaluated tests</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="card bg-surface border border-secondary border-opacity-25 p-3 h-100">
+                                <div class="text-secondary small fw-medium mb-1">Average Score</div>
+                                <div id="dash-stat-avg" class="fs-4 fw-bold text-info font-monospace">0%</div>
+                                <div class="text-muted small">Overall performance</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="card bg-surface border border-secondary border-opacity-25 p-3 h-100">
+                                <div class="text-secondary small fw-medium mb-1">MCQ vs Code</div>
+                                <div class="fs-4 fw-bold text-light font-monospace">
+                                    <span class="text-primary" id="dash-stat-mcq">0</span>
+                                    <span class="text-muted">/</span>
+                                    <span class="text-info" id="dash-stat-code">0</span>
+                                </div>
+                                <div class="text-muted small">Split ratio</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category Mastery Progress (Phase 10) -->
+                    <div id="dash-category-mastery-section" class="mt-3 d-none">
+                        <h6 class="fw-bold text-light small mb-2">Category Mastery & Proficiency (Best Score per Question)</h6>
+                        <div id="dash-mastery-bars" class="row g-2"></div>
+                    </div>
+                </div>
+
+                <!-- Practice Modules Launcher (Phase 4 Active) -->
+                <h5 class="fw-bold text-light mb-3">Available Assessments</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="card bg-surface border border-primary border-opacity-50 h-100 p-3">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="badge bg-primary">Theory Assessment</span>
+                                <span class="badge bg-success-subtle text-success border border-success">Active • Phase 4</span>
+                            </div>
+                            <h5 class="text-light fw-bold mb-1">Multiple Choice Questions</h5>
+                            <p class="text-secondary small mb-3">
+                                Test your theoretical knowledge across General Knowledge, English, and Mathematics with real-time timers and instant evaluation.
+                            </p>
+                            <a href="/assessments/mcq/" class="btn btn-primary btn-sm fw-semibold w-100 mt-auto">
+                                Start MCQ Assessment &rarr;
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-surface border border-info border-opacity-50 h-100 p-3">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="badge bg-info text-dark">Live Coding</span>
+                                <span class="badge bg-success-subtle text-success border border-success">Active • Phase 5</span>
+                            </div>
+                            <h5 class="text-light fw-bold mb-1">Coding Problems</h5>
+                            <p class="text-secondary small mb-3">
+                                Live coding challenges in Python, Java, C++, and DSA using the Monaco Editor workspace with client-side validation.
+                            </p>
+                            <a href="/coding/" class="btn btn-outline-info btn-sm fw-semibold w-100 mt-auto">
+                                Explore Coding Challenges &rarr;
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Attempts Section -->
+                <div id="student-attempts-card" class="card bg-surface border border-secondary border-opacity-25 mb-4 d-none">
+                    <div class="card-header bg-darker border-secondary border-opacity-25 p-3 d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-2">
+                            <h6 class="mb-0 fw-bold text-light">Recent Assessment Attempts</h6>
+                            <span class="badge bg-info-subtle text-info">Live History</span>
+                        </div>
+                        <a href="/attempts/" class="btn btn-outline-info btn-sm py-0 px-2">View All &rarr;</a>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover mb-0 small">
+                                <thead>
+                                    <tr class="text-secondary">
+                                        <th>Attempt ID</th>
+                                        <th>Subject</th>
+                                        <th>Difficulty</th>
+                                        <th>Score</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="attempts-table-body">
+                                    <tr>
+                                        <td colspan="7" class="text-center text-secondary py-3">Loading attempts...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Readiness & Verification Card -->
+                <div class="card bg-surface border border-secondary border-opacity-25 mb-4">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                            <h6 class="text-info fw-semibold mb-0">System & Session Diagnostic</h6>
+                            <span class="badge bg-success-subtle text-success border border-success">Phase 8 Active</span>
+                        </div>
+                        <div class="p-3 bg-darker rounded border border-secondary border-opacity-25 small font-monospace">
+                            <div><strong>Session Status:</strong> <span class="text-success">Connected</span></div>
+                            <div class="mt-1"><strong>Authenticated Endpoint:</strong> <span class="text-info">GET /api/auth/me/</span></div>
+                            <div id="dash-me-raw" class="mt-2 text-muted">Fetching profile details...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function getDashboardAuthHeaders() {
+    const headers = { 'Content-Type': 'application/json' };
+    const access = Auth.getAccessToken();
+    if (access) headers['Authorization'] = `Bearer ${access}`;
+    const guestSession = localStorage.getItem('skillbyte_guest_session_id');
+    if (guestSession) headers['X-Session-ID'] = guestSession;
+    return headers;
+}
+
+function getDashboardSessionParam() {
+    if (!Auth.isLoggedIn() && Auth.isGuest()) {
+        const guestSession = localStorage.getItem('skillbyte_guest_session_id');
+        if (guestSession) return `session_id=${encodeURIComponent(guestSession)}`;
+    }
+    return '';
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    const nameEl = document.getElementById('dash-user-name');
+    const roleBadge = document.getElementById('dash-user-role-badge');
+    const emailEl = document.getElementById('dash-user-email');
+    const avatarEl = document.getElementById('user-avatar');
+    const meRaw = document.getElementById('dash-me-raw');
+    const logoutBtn = document.getElementById('dash-logout-btn');
+
+    if (Auth.isGuest()) {
+        nameEl.textContent = "Guest Explorer";
+        roleBadge.className = "badge bg-warning text-dark";
+        roleBadge.textContent = "GUEST";
+        emailEl.textContent = "guest@skillbyte.local (Temporary Session)";
+        avatarEl.textContent = "G";
+        meRaw.innerHTML = `<span class="text-warning">Running in Guest Mode. Attempts will not be permanently stored on the leaderboard.</span>`;
+        logoutBtn.textContent = "Exit Guest Mode";
+        logoutBtn.onclick = () => { Auth.clearSession(); window.location.href = '/'; };
+
+        // Load guest attempts and progress if session exists
+        await Promise.all([
+            loadDashboardProgress(),
+            loadRecentAttempts()
+        ]);
+        return;
+    }
+
+    if (!Auth.isLoggedIn()) {
+        window.location.href = '/login/';
+        return;
+    }
+
+    try {
+        const res = await Auth.fetchWithAuth('/api/auth/me/');
+        if (!res.ok) {
+            throw new Error(`Auth failed with status ${res.status}`);
+        }
+        const user = await res.json();
+
+        // Update UI
+        nameEl.textContent = user.name;
+        emailEl.textContent = user.email;
+        roleBadge.textContent = user.role;
+
+        if (user.role === 'ADMIN') {
+            roleBadge.className = "badge bg-danger";
+        } else {
+            roleBadge.className = "badge bg-primary";
+        }
+
+        // Initials
+        const initials = user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'SB';
+        avatarEl.textContent = initials;
+
+        meRaw.innerHTML = `<span class="text-success">${JSON.stringify(user, null, 2)}</span>`;
+
+        // Load Student's previous attempts and progress
+        await Promise.all([
+            loadDashboardProgress(),
+            loadRecentAttempts()
+        ]);
+    } catch (err) {
+        meRaw.innerHTML = `<span class="text-danger">Failed to retrieve /api/auth/me/: ${err.message}</span>`;
+        setTimeout(() => {
+            Auth.clearSession();
+            window.location.href = '/login/?expired=1';
+        }, 1500);
+    }
+});
+
+async function loadDashboardProgress() {
+    try {
+        let url = '/api/assessments/progress/';
+        const sessionParam = getDashboardSessionParam();
+        if (sessionParam) url += `?${sessionParam}`;
+
+        const res = await fetch(url, { headers: getDashboardAuthHeaders() });
+        if (!res.ok) return;
+
+        const data = await res.json();
+        if (data.total_attempts > 0 || (data.unified_score && data.unified_score > 0)) {
+            document.getElementById('dash-stat-total').textContent = data.total_attempts || 0;
+            document.getElementById('dash-stat-completed').textContent = data.completed_attempts || 0;
+            document.getElementById('dash-stat-avg').textContent = `${data.average_percentage || 0}%`;
+            document.getElementById('dash-stat-mcq').textContent = data.mcq_count || 0;
+            document.getElementById('dash-stat-code').textContent = data.coding_count || 0;
+
+            // Phase 10: Unified Score & Skill Tier
+            document.getElementById('dash-unified-score').textContent = (data.unified_score || 0.0).toFixed(1);
+            document.getElementById('dash-theory-score').textContent = (data.theory_score || 0.0).toFixed(1);
+            document.getElementById('dash-coding-score').textContent = (data.coding_score || 0.0).toFixed(1);
+            const badgeEl = document.getElementById('dash-skill-badge');
+            if (badgeEl) {
+                badgeEl.textContent = data.skill_tier || 'Novice';
+                badgeEl.className = `badge ms-2 ${data.skill_badge_class || 'bg-secondary'}`;
+            }
+
+            // Phase 10: Category Mastery
+            const masterySection = document.getElementById('dash-category-mastery-section');
+            const masteryContainer = document.getElementById('dash-mastery-bars');
+            if (data.category_mastery && data.category_mastery.length > 0) {
+                masterySection.classList.remove('d-none');
+                masteryContainer.innerHTML = data.category_mastery.map(cat => {
+                    return `
+                        <div class="col-md-6">
+                            <div class="p-2 rounded bg-surface border border-secondary border-opacity-25">
+                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                    <span class="small fw-semibold text-light">${escapeHtml(cat.category)} (${cat.type})</span>
+                                    <span class="badge ${cat.status_badge || 'bg-secondary'} small" style="font-size: 0.72rem;">${cat.status} (${cat.mastery_percentage}%)</span>
+                                </div>
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar ${cat.mastery_percentage >= 80 ? 'bg-success' : (cat.mastery_percentage >= 50 ? 'bg-info' : 'bg-warning')}" 
+                                        role="progressbar" style="width: ${Math.min(100, cat.mastery_percentage)}%"></div>
+                                </div>
+                                <div class="d-flex justify-content-between text-muted small mt-1" style="font-size: 0.72rem;">
+                                    <span>${cat.unique_questions} unique question${cat.unique_questions > 1 ? 's' : ''}</span>
+                                    <span>${cat.best_marks}/${cat.max_marks} pts</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                masterySection.classList.add('d-none');
+            }
+
+            document.getElementById('dashboard-progress-section').classList.remove('d-none');
+        }
+    } catch (e) {
+        console.warn("Could not load dashboard progress:", e);
+    }
+}
+
+async function loadRecentAttempts() {
+    const card = document.getElementById('student-attempts-card');
+    const tbody = document.getElementById('attempts-table-body');
+
+    try {
+        let url = '/api/assessments/my-attempts/?limit=5';
+        const sessionParam = getDashboardSessionParam();
+        if (sessionParam) url += `&${sessionParam}`;
+
+        const res = await fetch(url, { headers: getDashboardAuthHeaders() });
+        if (!res.ok) return;
+
+        const attempts = await res.json();
+        card.classList.remove('d-none');
+
+        if (attempts.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center text-secondary py-3">No assessments attempted yet. Start an assessment to see your progress!</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = '';
+        attempts.forEach(att => {
+            const tr = document.createElement('tr');
+            const dateStr = new Date(att.started_at).toLocaleDateString();
+            const badgeClass = att.status === 'COMPLETED' ? 'bg-success' : 'bg-warning text-dark';
+            const isCode = att.question_type === 'CODE';
+
+            let actionLink = '';
+            if (isCode) {
+                actionLink = att.status === 'COMPLETED'
+                    ? `<a href="/coding/result/${att.attempt_id}/" class="btn btn-outline-info btn-sm py-0 px-2">View Solution</a>`
+                    : `<a href="/coding/assessment/${att.attempt_id}/" class="btn btn-outline-warning btn-sm py-0 px-2">Resume Code</a>`;
+            } else {
+                actionLink = att.status === 'COMPLETED'
+                    ? `<a href="/assessments/mcq/${att.attempt_id}/result/" class="btn btn-outline-info btn-sm py-0 px-2">View Result</a>`
+                    : `<a href="/assessments/mcq/${att.attempt_id}/" class="btn btn-outline-primary btn-sm py-0 px-2">Resume</a>`;
+            }
+
+            const typeBadge = isCode
+                ? `<span class="badge bg-info-subtle text-info border border-info me-1">Code</span>`
+                : `<span class="badge bg-primary-subtle text-primary border border-primary me-1">MCQ</span>`;
+
+            tr.innerHTML = `
+                <td class="font-monospace">#${att.attempt_id}</td>
+                <td>${typeBadge}<strong>${escapeHtml(att.category)}</strong></td>
+                <td><span class="badge bg-secondary">${att.difficulty}</span></td>
+                <td>${att.total_score} / ${att.max_score} <span class="text-muted">(${att.percentage}%)</span></td>
+                <td><span class="badge ${badgeClass}">${att.status}</span></td>
+                <td>${dateStr}</td>
+                <td>${actionLink}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch (e) {
+        console.warn("Could not load recent attempts:", e);
+    }
+}
+</script>
+{% endblock %}
+

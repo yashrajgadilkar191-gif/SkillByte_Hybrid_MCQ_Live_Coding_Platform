@@ -1,0 +1,1011 @@
+{% extends 'base.html' %}
+
+{% block title %}Live Coding Assessment — SKILLBYTE{% endblock %}
+
+{% block extra_css %}
+<style>
+    .workspace-pane {
+        height: calc(100vh - 200px);
+        min-height: 600px;
+    }
+    .problem-description-scroll {
+        max-height: calc(100vh - 270px);
+        overflow-y: auto;
+    }
+    #monaco-editor-container {
+        height: 560px;
+        min-height: 480px;
+        width: 100%;
+        border-radius: 0 0 6px 6px;
+    }
+    pre.code-sample {
+        background-color: #0b1120;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+        padding: 10px 14px;
+        color: #e2e8f0;
+        font-family: 'JetBrains Mono', Consolas, monospace;
+        font-size: 0.88rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row g-3" id="coding-workspace-container">
+    <!-- Left Pane: Problem Statement, Specs & Samples -->
+    <div class="col-lg-5">
+        <div class="card shadow-lg border-0 bg-glass text-light h-100">
+            <div class="card-header bg-darker border-secondary border-opacity-25 p-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2">
+                    <span id="problem-category-badge" class="badge bg-primary">Loading...</span>
+                    <span id="problem-difficulty-badge" class="badge bg-secondary">...</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span id="problem-marks-badge" class="badge bg-dark border border-secondary">-- Marks</span>
+                </div>
+            </div>
+
+            <div class="card-body p-4 problem-description-scroll">
+                <h4 id="problem-title-text" class="fw-bold text-light mb-3">Loading Problem...</h4>
+
+                <!-- Problem Statement -->
+                <div class="mb-4">
+                    <h6 class="text-uppercase text-secondary fw-bold small tracking-wide">Problem Statement</h6>
+                    <div id="problem-description-text" class="text-light-subtle" style="white-space: pre-wrap; line-height: 1.6;"></div>
+                </div>
+
+                <!-- Input / Output Formats -->
+                <div class="mb-4" id="formats-section">
+                    <h6 class="text-uppercase text-secondary fw-bold small">Input Format</h6>
+                    <p id="problem-input-format" class="small text-secondary mb-3">Standard input</p>
+
+                    <h6 class="text-uppercase text-secondary fw-bold small">Output Format</h6>
+                    <p id="problem-output-format" class="small text-secondary mb-0">Standard output</p>
+                </div>
+
+                <!-- Constraints -->
+                <div class="mb-4" id="constraints-section">
+                    <h6 class="text-uppercase text-secondary fw-bold small">Constraints</h6>
+                    <pre class="code-sample mb-0" id="problem-constraints">1 <= N <= 10^5</pre>
+                </div>
+
+                <!-- Sample I/O -->
+                <div class="mb-4" id="sample-io-section">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <h6 class="text-uppercase text-secondary fw-bold small mb-0">Sample Input</h6>
+                        <button class="btn btn-link btn-sm text-info p-0 text-decoration-none small" onclick="copySampleInput()">Copy</button>
+                    </div>
+                    <pre class="code-sample mb-3" id="problem-sample-input">--</pre>
+
+                    <h6 class="text-uppercase text-secondary fw-bold small mb-1">Sample Output</h6>
+                    <pre class="code-sample mb-0" id="problem-sample-output">--</pre>
+                </div>
+
+                <!-- Sample Test Cases (Strictly Hidden Cases NEVER Shown) -->
+                <div class="mb-3" id="sample-cases-section">
+                    <h6 class="text-uppercase text-secondary fw-bold small mb-2">Sample Test Cases (Visible)</h6>
+                    <div id="sample-test-cases-list" class="d-flex flex-column gap-2">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Pane: Monaco Editor Workspace -->
+    <div class="col-lg-7">
+        <div class="card shadow-lg border-0 bg-glass text-light h-100 d-flex flex-column">
+            <!-- Workspace Toolbar -->
+            <div class="card-header bg-darker border-secondary border-opacity-25 p-2 px-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <!-- Language Selector -->
+                <div class="d-flex align-items-center gap-2">
+                    <label for="language-select" class="small text-secondary fw-semibold">Language:</label>
+                    <select id="language-select" class="form-select form-select-sm bg-surface border-secondary text-light" style="width: 140px;">
+                        <option value="python">Python</option>
+                        <option value="java">Java</option>
+                        <option value="cpp">C++</option>
+                    </select>
+                    <button type="button" id="reset-code-btn" class="btn btn-outline-secondary btn-sm" title="Reset to Starter Code">
+                        Reset Code
+                    </button>
+                </div>
+
+                <!-- Timer -->
+                <div class="d-flex align-items-center gap-2 px-3 py-1 rounded bg-surface border border-secondary border-opacity-50">
+                    <span class="text-secondary small">Time Remaining:</span>
+                    <span id="countdown-timer" class="fw-bold font-monospace text-warning">--:--</span>
+                </div>
+            </div>
+
+            <!-- Monaco Editor Container -->
+            <div class="position-relative flex-grow-1" style="min-height: 500px;">
+                <div id="monaco-editor-loading" class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center bg-dark text-secondary z-3" style="top: 0; left: 0;">
+                    <div class="text-center" id="monaco-loading-content">
+                        <div class="spinner-border text-primary mb-2" role="status" id="monaco-spinner"></div>
+                        <div id="monaco-loading-status-text">Initializing Monaco Editor...</div>
+                    </div>
+                </div>
+                <div id="monaco-editor-container" style="height: 560px; min-height: 480px; width: 100%;"></div>
+            </div>
+
+            <!-- Action Bar -->
+            <div class="card-footer bg-darker border-secondary border-opacity-25 p-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="small text-secondary">
+                    <span id="editor-status-text">Ready to code</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <!-- Run Code Button -->
+                    <button type="button" id="run-code-btn" class="btn btn-outline-info btn-sm px-3 fw-semibold">
+                        &#9658; Run Code
+                    </button>
+                    <!-- Submit Button -->
+                    <button type="button" id="open-submit-modal-btn" class="btn btn-success btn-sm px-4 fw-semibold">
+                        Submit Solution &rarr;
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Run Code Results Modal (Phase 10) -->
+<div class="modal fade" id="runCodeModal" tabindex="-1" aria-labelledby="runCodeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content bg-darker text-light border border-secondary">
+            <div class="modal-header border-secondary border-opacity-25">
+                <div class="d-flex align-items-center gap-2">
+                    <h5 class="modal-title fw-bold text-light mb-0" id="runCodeModalLabel">
+                        <span class="text-info">&#9658;</span> Run Code (Sample Test Cases)
+                    </h5>
+                    <span id="run-status-badge" class="badge bg-secondary small">Ready</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3">
+                <!-- Loading State -->
+                <div id="run-loading" class="text-center py-4 d-none">
+                    <div class="spinner-border text-info mb-2" role="status"></div>
+                    <div class="text-secondary small">Executing code against sample test cases via Judge0...</div>
+                </div>
+
+                <!-- Error / Service Alert -->
+                <div id="run-alert-box" class="alert alert-danger py-2 px-3 small d-none mb-3"></div>
+
+                <!-- Run Results Container -->
+                <div id="run-results-container" class="d-none">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 bg-surface p-2 rounded border border-secondary border-opacity-25 small">
+                        <div>Language: <strong class="text-light" id="run-modal-lang">Python</strong></div>
+                        <div>Sample Cases Passed: <strong class="text-info" id="run-modal-passed">0/0</strong></div>
+                        <div>Time: <strong class="text-light font-monospace" id="run-modal-time">0.0s</strong></div>
+                        <div>Memory: <strong class="text-light font-monospace" id="run-modal-memory">0 KB</strong></div>
+                    </div>
+
+                    <!-- Compile / Stderr Box if error -->
+                    <div id="run-compile-box" class="d-none mb-3">
+                        <div class="small fw-semibold text-danger mb-1">Compiler / Execution Output:</div>
+                        <pre id="run-compile-output" class="p-2 rounded bg-dark border border-danger border-opacity-50 text-danger font-monospace small mb-0" style="max-height: 140px; overflow-y: auto; white-space: pre-wrap;"></pre>
+                    </div>
+
+                    <!-- Sample Cases List -->
+                    <div id="run-sample-cases-list">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary border-opacity-25">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-info btn-sm" id="btn-re-run-code" onclick="executeRunCode()">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Run Again
+                </button>
+                <button type="button" class="btn btn-success btn-sm" onclick="closeRunModalAndOpenSubmit()">
+                    Submit Solution &rarr;
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Language Switch Confirmation Modal -->
+<div class="modal fade" id="switchLangModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-darker text-light border border-warning">
+            <div class="modal-header border-secondary border-opacity-25">
+                <h5 class="modal-title fw-bold text-warning">Switch Programming Language?</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="small text-light-subtle mb-0">
+                    Switching the language will replace your current code with the starter template for the new language. Any unsaved edits will be discarded.
+                </p>
+            </div>
+            <div class="modal-footer border-secondary border-opacity-25">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="confirm-switch-lang-btn" class="btn btn-warning btn-sm fw-semibold">Switch & Reset</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Submit Confirmation Modal -->
+<div class="modal fade" id="submitModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-darker text-light border border-success">
+            <div class="modal-header border-secondary border-opacity-25">
+                <h5 class="modal-title fw-bold text-success">Submit Solution</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-light mb-2">Are you ready to submit your solution for this problem?</p>
+                <ul class="small text-secondary mb-3">
+                    <li>Assessment will transition to <strong>COMPLETED</strong>.</li>
+                    <li>Your submission will be recorded in PostgreSQL with <strong>PENDING</strong> status.</li>
+                    <li>Judge0 automated grading will evaluate your solution in Phase 6.</li>
+                </ul>
+                <div id="submit-error-msg" class="alert alert-danger d-none small py-2 px-3 mb-0"></div>
+            </div>
+            <div class="modal-footer border-secondary border-opacity-25">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Continue Coding</button>
+                <button type="button" id="confirm-submit-btn" class="btn btn-success btn-sm px-3 fw-semibold">
+                    <span id="submit-spinner" class="spinner-border spinner-border-sm d-none me-1" role="status"></span>
+                    Confirm Submission
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Monaco Editor AMD Loader 0.52.2 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/loader.min.js"></script>
+<script>
+// =============================================================
+// SKILLBYTE LIVE CODING ASSESSMENT — MONACO EDITOR & ENGINE
+// =============================================================
+
+const ATTEMPT_ID = {{ attempt_id }};
+let attemptData = null;
+let monacoEditor = null;
+let monacoReady = false;
+let initialCodeLoaded = false;
+let codeModified = false;
+let currentLanguage = 'python';
+let timerInterval = null;
+let remainingSeconds = 0;
+let pendingLanguageChange = null;
+let monacoLoadTimeout = null;
+
+// Expose on window for CDP / debug access
+window.ATTEMPT_ID = ATTEMPT_ID;
+window.attemptData = null;
+window.monacoEditor = null;
+window.monacoReady = false;
+window.currentLanguage = currentLanguage;
+
+// Multi-CDN Configuration for Monaco Editor (0.52.2)
+const MONACO_CDNS = [
+    {
+        name: 'cdnjs',
+        baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min',
+        loaderUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/loader.min.js'
+    },
+    {
+        name: 'jsDelivr',
+        baseUrl: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min',
+        loaderUrl: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.js'
+    },
+    {
+        name: 'unpkg',
+        baseUrl: 'https://unpkg.com/monaco-editor@0.52.2/min',
+        loaderUrl: 'https://unpkg.com/monaco-editor@0.52.2/min/vs/loader.js'
+    }
+];
+
+let currentCdnIndex = 0;
+let cdnScriptTag = null;
+let cdnTimeoutId = null;
+
+// Safe HTML Escaping
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    const div = document.createElement('div');
+    div.textContent = String(str);
+    return div.innerHTML;
+}
+
+// Lazy Bootstrap Modal Accessor
+function getModal(id) {
+    const el = document.getElementById(id);
+    if (!el) return null;
+    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+        return bootstrap.Modal.getInstance(el) || new bootstrap.Modal(el);
+    }
+    return null;
+}
+
+// Helper for authentication / guest session headers
+function getApiHeaders() {
+    const headers = { 'Content-Type': 'application/json' };
+    if (typeof Auth !== 'undefined' && Auth.getAccessToken) {
+        const access = Auth.getAccessToken();
+        if (access) headers['Authorization'] = `Bearer ${access}`;
+    }
+    const guestSession = localStorage.getItem('skillbyte_guest_session_id');
+    if (guestSession) {
+        headers['X-Session-ID'] = guestSession;
+    }
+    return headers;
+}
+
+// Normalize language identifier across Python, Java, C++
+function normalizeLang(lang) {
+    if (!lang) return 'python';
+    lang = lang.toString().trim().toLowerCase();
+    if (lang === 'c++' || lang === 'cpp') return 'cpp';
+    if (lang === 'java') return 'java';
+    return 'python';
+}
+
+// Map language to Monaco editor language syntax
+function getMonacoLang(lang) {
+    const n = normalizeLang(lang);
+    if (n === 'cpp') return 'cpp';
+    if (n === 'java') return 'java';
+    return 'python';
+}
+
+function getDefaultStarterCode(lang) {
+    const n = normalizeLang(lang);
+    if (n === 'python') {
+        return '# Write your Python solution here\nimport sys\n\ndef main():\n    # Read input from stdin\n    pass\n\nif __name__ == "__main__":\n    main()\n';
+    } else if (n === 'java') {
+        return 'import java.util.Scanner;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Write your Java solution here\n    }\n}\n';
+    } else if (n === 'cpp') {
+        return '#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your C++ solution here\n    return 0;\n}\n';
+    }
+    return '';
+}
+
+function getStarterCodeForCurrentLang() {
+    const langKey = normalizeLang(currentLanguage);
+    if (attemptData && attemptData.saved_code) {
+        return attemptData.saved_code;
+    }
+    const q = attemptData ? attemptData.question : null;
+    if (q && q.starter_code) {
+        if (q.starter_code[langKey]) return q.starter_code[langKey];
+        if (langKey === 'cpp' && q.starter_code['c++']) return q.starter_code['c++'];
+        if (langKey === 'c++' && q.starter_code['cpp']) return q.starter_code['cpp'];
+    }
+    return getDefaultStarterCode(langKey);
+}
+
+function hideMonacoLoading() {
+    const loadingEl = document.getElementById('monaco-editor-loading');
+    if (loadingEl) {
+        loadingEl.style.display = 'none';
+    }
+}
+
+function updateMonacoLoadingStatus(msg) {
+    const statusEl = document.getElementById('monaco-loading-status-text');
+    if (statusEl) statusEl.textContent = msg;
+}
+
+function showMonacoError(message, details) {
+    if (monacoLoadTimeout) clearTimeout(monacoLoadTimeout);
+    if (cdnTimeoutId) clearTimeout(cdnTimeoutId);
+    console.error("Monaco Error:", message, details || "");
+    const content = document.getElementById('monaco-loading-content');
+    if (content) {
+        content.innerHTML = `
+            <div class="text-danger fw-bold fs-5 mb-2">${escapeHtml(message)}</div>
+            <div class="text-secondary small mb-3">Please verify your network connection or reload the workspace.</div>
+            <button class="btn btn-outline-light btn-sm px-3" onclick="location.reload()">Reload Workspace</button>
+        `;
+    }
+}
+
+// -------------------------------------------------------------
+// Monaco Editor Multi-CDN Loader & Init
+// -------------------------------------------------------------
+function loadMonacoEditor() {
+    if (currentCdnIndex >= MONACO_CDNS.length) {
+        showMonacoError("All CDN mirrors failed to load Monaco Editor.");
+        return;
+    }
+
+    const cdn = MONACO_CDNS[currentCdnIndex];
+    console.log(`[SkillByte] Attempting to load Monaco from ${cdn.name} (${cdn.loaderUrl})...`);
+    updateMonacoLoadingStatus(`Connecting to ${cdn.name} CDN...`);
+
+    if (cdnScriptTag && cdnScriptTag.parentNode) {
+        cdnScriptTag.parentNode.removeChild(cdnScriptTag);
+        cdnScriptTag = null;
+    }
+
+    if (cdnTimeoutId) clearTimeout(cdnTimeoutId);
+    cdnTimeoutId = setTimeout(() => {
+        console.warn(`[SkillByte] CDN timeout for ${cdn.name}. Trying next fallback mirror...`);
+        tryNextCdn();
+    }, 4500);
+
+    if (typeof window.require !== 'undefined' && typeof window.require.config === 'function') {
+        clearTimeout(cdnTimeoutId);
+        configureAndInitMonaco(cdn);
+        return;
+    }
+
+    const script = document.createElement('script');
+    script.src = cdn.loaderUrl;
+    script.async = true;
+    cdnScriptTag = script;
+
+    script.onload = () => {
+        clearTimeout(cdnTimeoutId);
+        console.log(`[SkillByte] Monaco loader script loaded successfully from ${cdn.name}.`);
+        updateMonacoLoadingStatus(`Initializing Monaco Editor components...`);
+        configureAndInitMonaco(cdn);
+    };
+
+    script.onerror = () => {
+        clearTimeout(cdnTimeoutId);
+        console.warn(`[SkillByte] Failed to load Monaco loader script from ${cdn.name}. Trying fallback...`);
+        tryNextCdn();
+    };
+
+    document.head.appendChild(script);
+}
+
+function tryNextCdn() {
+    currentCdnIndex++;
+    if (currentCdnIndex < MONACO_CDNS.length) {
+        loadMonacoEditor();
+    } else {
+        showMonacoError("Monaco Editor failed to load from all available CDNs.");
+    }
+}
+
+function configureAndInitMonaco(cdn) {
+    try {
+        const vsUrl = `${cdn.baseUrl}/vs`;
+
+        window.MonacoEnvironment = {
+            getWorkerUrl: function(workerId, label) {
+                return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
+                    self.MonacoEnvironment = { baseUrl: '${vsUrl}/' };
+                    importScripts('${vsUrl}/base/worker/workerMain.js');
+                `)}`;
+            }
+        };
+
+        window.require.config({
+            paths: {
+                'vs': vsUrl
+            }
+        });
+
+        window.require(['vs/editor/editor.main'], function() {
+            console.log(`[SkillByte] Monaco editor.main initialized successfully from ${cdn.name}.`);
+
+            const container = document.getElementById('monaco-editor-container');
+            if (!container) {
+                showMonacoError("Editor container element not found in DOM.");
+                return;
+            }
+
+            const initialCode = getStarterCodeForCurrentLang();
+            const monacoLang = getMonacoLang(currentLanguage);
+
+            try {
+                monacoEditor = monaco.editor.create(container, {
+                    value: initialCode,
+                    language: monacoLang,
+                    theme: 'vs-dark',
+                    automaticLayout: true,
+                    fontSize: 14,
+                    fontFamily: "'JetBrains Mono', Consolas, 'Courier New', monospace",
+                    minimap: { enabled: true },
+                    lineNumbers: 'on',
+                    scrollBeyondLastLine: false,
+                    tabSize: 4,
+                    wordWrap: 'on'
+                });
+
+                monacoReady = true;
+                window.monacoEditor = monacoEditor;
+                window.monacoReady = true;
+
+                monacoEditor.onDidChangeModelContent(() => {
+                    codeModified = true;
+                    const statusText = document.getElementById('editor-status-text');
+                    if (statusText) statusText.textContent = 'Edited (unsaved)';
+                });
+
+                if (attemptData) {
+                    applyAttemptDataToEditor();
+                }
+
+                hideMonacoLoading();
+                const statusText = document.getElementById('editor-status-text');
+                if (statusText) statusText.textContent = 'Ready to code';
+                console.log("[SkillByte] Monaco Editor instance mounted and ready.");
+            } catch (err) {
+                showMonacoError("Failed to instantiate Monaco editor.", err);
+            }
+        }, function(requireErr) {
+            console.warn(`[SkillByte] require(['vs/editor/editor.main']) failed for ${cdn.name}:`, requireErr);
+            tryNextCdn();
+        });
+    } catch (e) {
+        console.warn(`[SkillByte] Exception during Monaco configuration for ${cdn.name}:`, e);
+        tryNextCdn();
+    }
+}
+
+function applyAttemptDataToEditor() {
+    if (!monacoEditor) return;
+    const starter = getStarterCodeForCurrentLang();
+    const monacoLang = getMonacoLang(currentLanguage);
+
+    monaco.editor.setModelLanguage(monacoEditor.getModel(), monacoLang);
+    monacoEditor.setValue(starter);
+    codeModified = false;
+    initialCodeLoaded = true;
+    hideMonacoLoading();
+}
+
+// -------------------------------------------------------------
+// Workspace State & Problem Details Fetcher
+// -------------------------------------------------------------
+async function initWorkspace() {
+    try {
+        const guestSession = localStorage.getItem('skillbyte_guest_session_id');
+        let url = `/api/assessments/coding/${ATTEMPT_ID}/`;
+        if (guestSession) url += `?session_id=${encodeURIComponent(guestSession)}`;
+
+        const res = await fetch(url, { headers: getApiHeaders() });
+        if (!res.ok) {
+            console.error("Failed to load coding attempt:", res.status);
+            alert("Could not load coding assessment. You may not have access or the attempt has expired.");
+            window.location.href = '/coding/';
+            return;
+        }
+
+        attemptData = await res.json();
+        window.attemptData = attemptData;
+        renderProblemDetails(attemptData);
+
+        currentLanguage = normalizeLang(attemptData.language || 'python');
+        window.currentLanguage = currentLanguage;
+        const langSelect = document.getElementById('language-select');
+        if (langSelect) langSelect.value = currentLanguage;
+
+        if (monacoReady && !initialCodeLoaded) {
+            applyAttemptDataToEditor();
+        }
+
+        startTimer(attemptData.remaining_seconds || 1800);
+    } catch (err) {
+        console.error("Failed to initialize workspace data", err);
+    }
+}
+
+function renderProblemDetails(data) {
+    const q = data.question;
+    if (!q) return;
+
+    const elTitle = document.getElementById('problem-title-text');
+    if (elTitle) elTitle.textContent = q.title;
+
+    const elCat = document.getElementById('problem-category-badge');
+    if (elCat) elCat.textContent = q.category || 'Coding';
+
+    const elDiff = document.getElementById('problem-difficulty-badge');
+    if (elDiff) elDiff.textContent = q.difficulty || 'Easy';
+
+    const elMarks = document.getElementById('problem-marks-badge');
+    if (elMarks) elMarks.textContent = `${q.marks} Marks`;
+
+    const elDesc = document.getElementById('problem-description-text');
+    if (elDesc) elDesc.textContent = q.description;
+
+    const elInFmt = document.getElementById('problem-input-format');
+    if (elInFmt) elInFmt.textContent = q.input_format || 'Standard input format.';
+
+    const elOutFmt = document.getElementById('problem-output-format');
+    if (elOutFmt) elOutFmt.textContent = q.output_format || 'Standard output format.';
+
+    const elConst = document.getElementById('problem-constraints');
+    if (elConst) elConst.textContent = q.constraints || 'Standard constraints apply.';
+
+    const elSampIn = document.getElementById('problem-sample-input');
+    if (elSampIn) elSampIn.textContent = q.sample_input || 'N/A';
+
+    const elSampOut = document.getElementById('problem-sample-output');
+    if (elSampOut) elSampOut.textContent = q.sample_output || 'N/A';
+
+    // Render sample test cases (Only is_hidden=False)
+    const list = document.getElementById('sample-test-cases-list');
+    if (list) {
+        if (q.sample_test_cases && q.sample_test_cases.length > 0) {
+            list.innerHTML = q.sample_test_cases.map((tc, idx) => `
+                <div class="card bg-surface border-secondary border-opacity-25 p-2 small mb-2">
+                    <div class="d-flex justify-content-between text-secondary mb-1">
+                        <span>Sample Case #${idx + 1}</span>
+                        <span class="badge bg-dark border border-secondary">${tc.marks || 1} Marks</span>
+                    </div>
+                    <div class="font-monospace text-light-subtle">
+                        <div><strong>Input:</strong> <code>${escapeHtml(tc.input_data)}</code></div>
+                        <div><strong>Output:</strong> <code>${escapeHtml(tc.expected_output)}</code></div>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            list.innerHTML = `<div class="text-secondary small">No sample test cases specified.</div>`;
+        }
+    }
+}
+
+function copySampleInput() {
+    const textEl = document.getElementById('problem-sample-input');
+    if (!textEl) return;
+    const text = textEl.textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        alert("Sample input copied to clipboard!");
+    });
+}
+
+// -------------------------------------------------------------
+// Language Selection & Switching
+// -------------------------------------------------------------
+function applyLanguageSwitch(newLang) {
+    currentLanguage = normalizeLang(newLang);
+    window.currentLanguage = currentLanguage;
+    const langSelect = document.getElementById('language-select');
+    if (langSelect) langSelect.value = currentLanguage;
+
+    if (monacoEditor) {
+        const monacoLang = getMonacoLang(currentLanguage);
+        monaco.editor.setModelLanguage(monacoEditor.getModel(), monacoLang);
+        const starter = getStarterCodeForCurrentLang();
+        monacoEditor.setValue(starter);
+        codeModified = false;
+        const statusText = document.getElementById('editor-status-text');
+        if (statusText) statusText.textContent = `Switched to ${currentLanguage.toUpperCase()}`;
+    }
+}
+window.applyLanguageSwitch = applyLanguageSwitch;
+
+// -------------------------------------------------------------
+// Live Run Code (Phase 10: Judge0 execution against sample cases)
+// -------------------------------------------------------------
+async function executeRunCode() {
+    let code = '';
+    if (typeof monacoEditor !== 'undefined' && monacoEditor) {
+        code = monacoEditor.getValue().trim();
+    } else {
+        const textarea = document.getElementById('code-editor') || document.querySelector('textarea');
+        code = textarea ? textarea.value.trim() : (window.testCode || '');
+    }
+
+    const modal = getModal('runCodeModal');
+    if (modal) modal.show();
+
+    const loadingEl = document.getElementById('run-loading');
+    const resultsContainer = document.getElementById('run-results-container');
+    const alertBox = document.getElementById('run-alert-box');
+    const compileBox = document.getElementById('run-compile-box');
+    const compileOutput = document.getElementById('run-compile-output');
+    const statusBadge = document.getElementById('run-status-badge');
+    const btnReRun = document.getElementById('btn-re-run-code');
+
+    if (loadingEl) loadingEl.classList.remove('d-none');
+    if (resultsContainer) resultsContainer.classList.add('d-none');
+    if (alertBox) alertBox.classList.add('d-none');
+    if (compileBox) compileBox.classList.add('d-none');
+    if (btnReRun) btnReRun.disabled = true;
+
+    if (statusBadge) {
+        statusBadge.className = 'badge bg-secondary small';
+        statusBadge.textContent = 'Running...';
+    }
+
+    if (!code) {
+        if (loadingEl) loadingEl.classList.add('d-none');
+        if (alertBox) {
+            alertBox.textContent = 'Cannot run empty code. Please type your solution.';
+            alertBox.classList.remove('d-none');
+        }
+        if (statusBadge) statusBadge.textContent = 'Empty Code';
+        if (btnReRun) btnReRun.disabled = false;
+        return;
+    }
+
+    try {
+        const payload = {
+            source_code: code,
+            language: normalizeLang(currentLanguage),
+            session_id: localStorage.getItem('skillbyte_guest_session_id')
+        };
+
+        const res = await fetch(`/api/assessments/coding/${ATTEMPT_ID}/run/`, {
+            method: 'POST',
+            headers: getApiHeaders(),
+            body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (loadingEl) loadingEl.classList.add('d-none');
+
+        if (!res.ok) {
+            if (alertBox) {
+                alertBox.textContent = data.error || 'Run Code request failed.';
+                alertBox.classList.remove('d-none');
+            }
+            if (statusBadge) {
+                statusBadge.className = 'badge bg-danger small';
+                statusBadge.textContent = 'Error';
+            }
+            if (btnReRun) btnReRun.disabled = false;
+            return;
+        }
+
+        // Render results
+        if (resultsContainer) resultsContainer.classList.remove('d-none');
+        const langEl = document.getElementById('run-modal-lang');
+        if (langEl) langEl.textContent = (data.language || currentLanguage).toUpperCase();
+        const passedEl = document.getElementById('run-modal-passed');
+        if (passedEl) passedEl.textContent = `${data.sample_cases_passed || 0}/${data.total_sample_cases || 0}`;
+        const timeEl = document.getElementById('run-modal-time');
+        if (timeEl) timeEl.textContent = `${data.execution_time || 0}s`;
+        const memEl = document.getElementById('run-modal-memory');
+        if (memEl) memEl.textContent = `${Math.round(data.memory_usage || 0)} KB`;
+
+        const isAccepted = data.status === 'ACCEPTED';
+        if (statusBadge) {
+            statusBadge.className = isAccepted 
+                ? 'badge bg-success small' 
+                : (data.status === 'PARTIAL' ? 'badge bg-warning text-dark small' : 'badge bg-danger small');
+            statusBadge.textContent = data.status;
+        }
+
+        if (data.error_output && compileBox && compileOutput) {
+            compileOutput.textContent = data.error_output;
+            compileBox.classList.remove('d-none');
+        }
+
+        const casesList = document.getElementById('run-sample-cases-list');
+        if (casesList) {
+            if (data.results && data.results.length > 0) {
+                casesList.innerHTML = data.results.map(tc => {
+                    const badge = tc.passed
+                        ? '<span class="badge bg-success small">Passed</span>'
+                        : `<span class="badge bg-danger small">${escapeHtml(tc.status_description || 'Failed')}</span>`;
+                    return `
+                        <div class="card bg-surface border border-secondary border-opacity-25 p-3 mb-2 small">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="fw-bold text-light">Sample Case #${tc.case_number}</span>
+                                ${badge}
+                            </div>
+                            <div class="row g-2 font-monospace">
+                                <div class="col-md-4">
+                                    <span class="text-secondary small d-block">Input:</span>
+                                    <div class="bg-dark p-2 rounded text-info text-truncate">${escapeHtml(tc.input_data || '(empty)')}</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <span class="text-secondary small d-block">Expected:</span>
+                                    <div class="bg-dark p-2 rounded text-success text-truncate">${escapeHtml(tc.expected_output || '(empty)')}</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <span class="text-secondary small d-block">Actual:</span>
+                                    <div class="bg-dark p-2 rounded text-light text-truncate">${escapeHtml(tc.actual_output || '(no output)')}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                casesList.innerHTML = '<div class="text-secondary small">No sample test cases defined for this problem.</div>';
+            }
+        }
+    } catch (err) {
+        if (loadingEl) loadingEl.classList.add('d-none');
+        if (alertBox) {
+            alertBox.textContent = 'Network error connecting to evaluation service: ' + err.message;
+            alertBox.classList.remove('d-none');
+        }
+        if (statusBadge) {
+            statusBadge.className = 'badge bg-danger small';
+            statusBadge.textContent = 'Network Error';
+        }
+    } finally {
+        if (btnReRun) btnReRun.disabled = false;
+    }
+}
+window.executeRunCode = executeRunCode;
+
+function closeRunModalAndOpenSubmit() {
+    const runM = getModal('runCodeModal');
+    if (runM) runM.hide();
+    const submitBtn = document.getElementById('open-submit-modal-btn');
+    if (submitBtn) submitBtn.click();
+}
+
+// -------------------------------------------------------------
+// Server-Authoritative Countdown Timer
+// -------------------------------------------------------------
+function startTimer(seconds) {
+    if (timerInterval) clearInterval(timerInterval);
+    remainingSeconds = seconds;
+    const timerDisplay = document.getElementById('countdown-timer');
+    if (!timerDisplay) return;
+
+    function updateDisplay() {
+        if (remainingSeconds <= 0) {
+            timerDisplay.textContent = "00:00";
+            timerDisplay.classList.remove('text-warning');
+            timerDisplay.classList.add('text-danger');
+            clearInterval(timerInterval);
+            handleTimeExpired();
+            return;
+        }
+
+        const mins = Math.floor(remainingSeconds / 60);
+        const secs = remainingSeconds % 60;
+        timerDisplay.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+        if (remainingSeconds < 300) {
+            timerDisplay.classList.remove('text-warning');
+            timerDisplay.classList.add('text-danger');
+        }
+        remainingSeconds--;
+    }
+
+    updateDisplay();
+    timerInterval = setInterval(updateDisplay, 1000);
+}
+
+function handleTimeExpired() {
+    alert("Assessment time limit has expired! Submitting your solution now...");
+    const confirmBtn = document.getElementById('confirm-submit-btn');
+    if (confirmBtn) confirmBtn.click();
+}
+
+// -------------------------------------------------------------
+// DOM Event Listeners & Bootstrapping
+// -------------------------------------------------------------
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Language selector change
+    const langSelect = document.getElementById('language-select');
+    if (langSelect) {
+        langSelect.addEventListener('change', (e) => {
+            const targetLang = normalizeLang(e.target.value);
+            if (codeModified) {
+                pendingLanguageChange = targetLang;
+                const modal = getModal('switchLangModal');
+                if (modal) modal.show();
+            } else {
+                applyLanguageSwitch(targetLang);
+            }
+        });
+    }
+
+    // 2. Confirm language switch button
+    const confirmSwitchBtn = document.getElementById('confirm-switch-lang-btn');
+    if (confirmSwitchBtn) {
+        confirmSwitchBtn.addEventListener('click', () => {
+            if (!pendingLanguageChange) return;
+            const modal = getModal('switchLangModal');
+            if (modal) modal.hide();
+            applyLanguageSwitch(pendingLanguageChange);
+            pendingLanguageChange = null;
+        });
+    }
+
+    // 3. Reset code button
+    const resetCodeBtn = document.getElementById('reset-code-btn');
+    if (resetCodeBtn) {
+        resetCodeBtn.addEventListener('click', () => {
+            if (!codeModified || confirm("Reset current editor code to default starter template?")) {
+                if (monacoEditor) {
+                    const starter = getStarterCodeForCurrentLang();
+                    monacoEditor.setValue(starter);
+                    codeModified = false;
+                    const statusText = document.getElementById('editor-status-text');
+                    if (statusText) statusText.textContent = 'Code reset to template';
+                }
+            }
+        });
+    }
+
+    // 4. Run Code button
+    const runCodeBtn = document.getElementById('run-code-btn');
+    if (runCodeBtn) {
+        runCodeBtn.addEventListener('click', () => {
+            executeRunCode();
+        });
+    }
+
+    // 5. Submit modal trigger
+    const openSubmitBtn = document.getElementById('open-submit-modal-btn');
+    if (openSubmitBtn) {
+        openSubmitBtn.addEventListener('click', () => {
+            const errEl = document.getElementById('submit-error-msg');
+            if (errEl) errEl.classList.add('d-none');
+            const modal = getModal('submitModal');
+            if (modal) modal.show();
+        });
+    }
+
+    // 6. Confirm Submit button
+    const confirmSubmitBtn = document.getElementById('confirm-submit-btn');
+    if (confirmSubmitBtn) {
+        confirmSubmitBtn.addEventListener('click', async () => {
+            let code = '';
+            if (typeof monacoEditor !== 'undefined' && monacoEditor) {
+                code = monacoEditor.getValue().trim();
+            } else {
+                const textarea = document.getElementById('code-editor') || document.querySelector('textarea');
+                code = textarea ? textarea.value.trim() : (window.testCode || '');
+            }
+
+            const errorEl = document.getElementById('submit-error-msg');
+            const spinner = document.getElementById('submit-spinner');
+
+            if (!code) {
+                if (errorEl) {
+                    errorEl.textContent = "Cannot submit empty solution. Please write your code.";
+                    errorEl.classList.remove('d-none');
+                }
+                return;
+            }
+
+            confirmSubmitBtn.disabled = true;
+            if (spinner) spinner.classList.remove('d-none');
+
+            try {
+                const guestSession = localStorage.getItem('skillbyte_guest_session_id');
+                const payload = {
+                    source_code: code,
+                    language: normalizeLang(currentLanguage),
+                    session_id: guestSession
+                };
+
+                const res = await fetch(`/api/assessments/coding/${ATTEMPT_ID}/submit/`, {
+                    method: 'POST',
+                    headers: getApiHeaders(),
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    const modal = getModal('submitModal');
+                    if (modal) modal.hide();
+                    window.location.href = `/coding/result/${ATTEMPT_ID}/`;
+                } else {
+                    if (errorEl) {
+                        errorEl.textContent = data.error || "Failed to submit code.";
+                        errorEl.classList.remove('d-none');
+                    }
+                }
+            } catch (err) {
+                if (errorEl) {
+                    errorEl.textContent = "Network error: Unable to submit solution.";
+                    errorEl.classList.remove('d-none');
+                }
+            } finally {
+                confirmSubmitBtn.disabled = false;
+                if (spinner) spinner.classList.add('d-none');
+            }
+        });
+    }
+
+    // 7. Initialize Monaco & Workspace Concurrently
+    loadMonacoEditor();
+    initWorkspace();
+});
+</script>
+{% endblock %}
+

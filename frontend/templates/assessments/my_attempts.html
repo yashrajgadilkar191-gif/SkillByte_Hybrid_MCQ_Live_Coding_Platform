@@ -1,0 +1,462 @@
+{% extends 'base.html' %}
+
+{% block title %}My Assessments & Attempt History — SKILLBYTE{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        background: rgba(15, 23, 42, 0.65);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-2px);
+        border-color: rgba(59, 130, 246, 0.4);
+    }
+    .category-pill {
+        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 9999px;
+        padding: 4px 12px;
+        font-size: 0.82rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .filter-btn.active {
+        background-color: #0d6efd !important;
+        border-color: #0d6efd !important;
+        color: #fff !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-11 col-xl-10">
+        <!-- Breadcrumb & Page Header -->
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-1 small">
+                        <li class="breadcrumb-item"><a href="/dashboard/" class="text-info text-decoration-none">&larr; Dashboard</a></li>
+                        <li class="breadcrumb-item active text-secondary" aria-current="page">Attempt History</li>
+                    </ol>
+                </nav>
+                <h3 class="fw-bold text-light mb-1">Assessment History & Progress</h3>
+                <p class="text-secondary small mb-0">Track your performance, review past evaluations, and analyze your growth.</p>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span id="session-user-badge" class="badge bg-secondary px-3 py-2">Loading session...</span>
+                <button class="btn btn-outline-secondary btn-sm" onclick="loadAllData()" title="Refresh data">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-arrow-clockwise me-1" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2z"/>
+                        <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466"/>
+                    </svg>
+                    Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- Guest Notice Banner (Shown only for guests) -->
+        <div id="guest-notice" class="alert alert-warning py-2 px-3 small border-0 bg-warning bg-opacity-10 text-warning d-none mb-4">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <span>
+                    <strong>Guest Session:</strong> Displaying attempts recorded under your temporary browser session. Sign in to preserve your history permanently.
+                </span>
+                <a href="/login/" class="btn btn-warning btn-sm py-0 px-2 fw-semibold text-dark">Sign In Now</a>
+            </div>
+        </div>
+
+        <!-- Progress Summary Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="stat-card p-3">
+                    <div class="text-secondary small fw-medium mb-1">Total Attempts</div>
+                    <div id="stat-total-attempts" class="fs-3 fw-bold text-light font-monospace">-</div>
+                    <div class="text-muted small mt-1">Theory & Code</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card p-3">
+                    <div class="text-secondary small fw-medium mb-1">Completed</div>
+                    <div id="stat-completed-attempts" class="fs-3 fw-bold text-success font-monospace">-</div>
+                    <div class="text-muted small mt-1" id="stat-completion-rate">- rate</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card p-3">
+                    <div class="text-secondary small fw-medium mb-1">Average Score</div>
+                    <div id="stat-avg-score" class="fs-3 fw-bold text-info font-monospace">-%</div>
+                    <div class="text-muted small mt-1">Across completed tests</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card p-3">
+                    <div class="text-secondary small fw-medium mb-1">Assessment Split</div>
+                    <div class="d-flex align-items-baseline gap-2 mt-1">
+                        <span class="fs-4 fw-bold text-primary font-monospace" id="stat-mcq-count">-</span>
+                        <span class="text-secondary small">MCQ</span>
+                        <span class="text-muted">|</span>
+                        <span class="fs-4 fw-bold text-info font-monospace" id="stat-code-count">-</span>
+                        <span class="text-secondary small">Code</span>
+                    </div>
+                    <div class="text-muted small mt-1">Theory vs Live Coding</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category Progress Breakdown -->
+        <div id="category-breakdown-card" class="card bg-glass border border-secondary border-opacity-25 mb-4 d-none">
+            <div class="card-body p-3">
+                <h6 class="text-light fw-bold mb-2 small text-uppercase letter-spacing">Subject Performance</h6>
+                <div id="category-pills-container" class="d-flex flex-wrap gap-2">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Controls Bar -->
+        <div class="card bg-glass border border-secondary border-opacity-25 mb-4">
+            <div class="card-body p-3">
+                <div class="row g-2 align-items-center">
+                    <div class="col-md-5">
+                        <div class="btn-group btn-group-sm w-100" role="group" aria-label="Assessment Type Filter">
+                            <button type="button" class="btn btn-outline-secondary filter-btn active" data-type="" onclick="setTypeFilter('', this)">All Types</button>
+                            <button type="button" class="btn btn-outline-secondary filter-btn" data-type="MCQ" onclick="setTypeFilter('MCQ', this)">
+                                <span class="badge bg-primary me-1">MCQ</span> Theory
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary filter-btn" data-type="CODE" onclick="setTypeFilter('CODE', this)">
+                                <span class="badge bg-info text-dark me-1">Code</span> Live Coding
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <select id="filter-category" class="form-select form-select-sm bg-darker text-light border-secondary border-opacity-50" onchange="applyFilters()">
+                            <option value="">All Subjects & Categories</option>
+                            <option value="General Knowledge">General Knowledge</option>
+                            <option value="Mathematics">Mathematics</option>
+                            <option value="English">English</option>
+                            <option value="Python">Python</option>
+                            <option value="Java">Java</option>
+                            <option value="C++">C++</option>
+                            <option value="DSA">DSA</option>
+                        </select>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <select id="filter-status" class="form-select form-select-sm bg-darker text-light border-secondary border-opacity-50" onchange="applyFilters()">
+                            <option value="">All Statuses</option>
+                            <option value="COMPLETED">Completed Only</option>
+                            <option value="IN_PROGRESS">In Progress Only</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attempts Table Card -->
+        <div class="card bg-glass border border-secondary border-opacity-25 shadow-lg mb-4">
+            <div class="card-header bg-darker border-secondary border-opacity-25 p-3 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <h5 class="text-light fw-bold mb-0">Recorded Attempts</h5>
+                    <span id="filtered-count-badge" class="badge bg-secondary font-monospace">0</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="/assessments/mcq/" class="btn btn-outline-primary btn-sm py-1 px-2">New MCQ</a>
+                    <a href="/coding/" class="btn btn-outline-info btn-sm py-1 px-2">New Coding</a>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle mb-0">
+                        <thead class="bg-darker text-secondary small text-uppercase">
+                            <tr>
+                                <th style="width: 85px;">ID</th>
+                                <th>Assessment</th>
+                                <th>Difficulty</th>
+                                <th>Score / Marks</th>
+                                <th>Percentage</th>
+                                <th>Status</th>
+                                <th>Date & Time</th>
+                                <th class="text-end" style="width: 140px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attempts-tbody">
+                            <tr>
+                                <td colspan="8" class="text-center text-secondary py-5">
+                                    <div class="spinner-border spinner-border-sm text-info me-2" role="status"></div>
+                                    Loading your assessment history...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Empty State (Hidden by default) -->
+                <div id="empty-state" class="text-center py-5 px-3 d-none">
+                    <div class="mb-3">
+                        <span class="badge bg-secondary p-3 rounded-circle fs-4 text-muted">📋</span>
+                    </div>
+                    <h5 class="text-light fw-bold mb-1">No Assessment Attempts Found</h5>
+                    <p class="text-secondary small mb-4">You have not taken any assessments matching the selected filters yet.</p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="/assessments/mcq/" class="btn btn-primary btn-sm px-3 fw-semibold">Start MCQ Test &rarr;</a>
+                        <a href="/coding/" class="btn btn-outline-info btn-sm px-3 fw-semibold">Solve Coding Problem &rarr;</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentTypeFilter = '';
+let allAttemptsCache = [];
+
+function getAuthHeaders() {
+    const headers = { 'Content-Type': 'application/json' };
+    const access = Auth.getAccessToken();
+    if (access) {
+        headers['Authorization'] = `Bearer ${access}`;
+    }
+    const guestSession = localStorage.getItem('skillbyte_guest_session_id');
+    if (guestSession) {
+        headers['X-Session-ID'] = guestSession;
+    }
+    return headers;
+}
+
+function getQuerySessionParam() {
+    if (!Auth.isLoggedIn() && Auth.isGuest()) {
+        const guestSession = localStorage.getItem('skillbyte_guest_session_id');
+        if (guestSession) return `session_id=${encodeURIComponent(guestSession)}`;
+    }
+    return '';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    updateUserBanner();
+    loadAllData();
+});
+
+function updateUserBanner() {
+    const badge = document.getElementById('session-user-badge');
+    const guestNotice = document.getElementById('guest-notice');
+
+    if (Auth.isLoggedIn()) {
+        const user = Auth.getUser();
+        badge.className = "badge bg-primary px-3 py-2";
+        badge.textContent = `Student: ${user?.name || user?.username || 'Authenticated'}`;
+        guestNotice.classList.add('d-none');
+    } else if (Auth.isGuest()) {
+        badge.className = "badge bg-warning text-dark px-3 py-2";
+        badge.textContent = "Guest Session";
+        guestNotice.classList.remove('d-none');
+    } else {
+        // Set guest session by default if not logged in
+        Auth.setGuestMode();
+        badge.className = "badge bg-warning text-dark px-3 py-2";
+        badge.textContent = "Guest Session";
+        guestNotice.classList.remove('d-none');
+    }
+}
+
+async function loadAllData() {
+    await Promise.all([
+        loadProgressMetrics(),
+        loadAttempts()
+    ]);
+}
+
+async function loadProgressMetrics() {
+    try {
+        let url = '/api/assessments/progress/';
+        const sessionParam = getQuerySessionParam();
+        if (sessionParam) url += `?${sessionParam}`;
+
+        const res = await fetch(url, { headers: getAuthHeaders() });
+        if (!res.ok) return;
+
+        const data = await res.json();
+        
+        document.getElementById('stat-total-attempts').textContent = data.total_attempts;
+        document.getElementById('stat-completed-attempts').textContent = data.completed_attempts;
+        
+        const rate = data.total_attempts > 0 
+            ? Math.round((data.completed_attempts / data.total_attempts) * 100) 
+            : 0;
+        document.getElementById('stat-completion-rate').textContent = `${rate}% completion rate`;
+        
+        document.getElementById('stat-avg-score').textContent = `${data.average_percentage}%`;
+        document.getElementById('stat-mcq-count').textContent = data.mcq_count;
+        document.getElementById('stat-code-count').textContent = data.coding_count;
+
+        // Render Category Breakdown
+        const breakdownCard = document.getElementById('category-breakdown-card');
+        const container = document.getElementById('category-pills-container');
+        if (data.category_breakdown && data.category_breakdown.length > 0) {
+            breakdownCard.classList.remove('d-none');
+            container.innerHTML = data.category_breakdown.map(cat => {
+                const isCode = cat.question_type === 'CODE';
+                const typeTag = isCode ? 'Code' : 'MCQ';
+                const tagColor = isCode ? 'text-info' : 'text-primary';
+                return `
+                    <div class="category-pill text-light">
+                        <strong class="${tagColor}">[${typeTag}]</strong>
+                        <span>${escapeHtml(cat.category)}:</span>
+                        <span class="badge bg-secondary font-monospace">${cat.completed}/${cat.total} done</span>
+                        <span class="text-info font-monospace">${cat.average_percentage}%</span>
+                    </div>
+                `;
+            }).join('');
+        } else {
+            breakdownCard.classList.add('d-none');
+        }
+    } catch (e) {
+        console.warn("Could not load progress metrics:", e);
+    }
+}
+
+async function loadAttempts() {
+    const tbody = document.getElementById('attempts-tbody');
+    const emptyState = document.getElementById('empty-state');
+    const countBadge = document.getElementById('filtered-count-badge');
+
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="8" class="text-center text-secondary py-5">
+                <div class="spinner-border spinner-border-sm text-info me-2" role="status"></div>
+                Loading attempts...
+            </td>
+        </tr>
+    `;
+    emptyState.classList.add('d-none');
+
+    try {
+        let url = '/api/assessments/my-attempts/';
+        const params = [];
+        const sessionParam = getQuerySessionParam();
+        if (sessionParam) params.push(sessionParam);
+        if (currentTypeFilter) params.push(`type=${encodeURIComponent(currentTypeFilter)}`);
+        
+        const catVal = document.getElementById('filter-category').value;
+        if (catVal) params.push(`category=${encodeURIComponent(catVal)}`);
+
+        const statusVal = document.getElementById('filter-status').value;
+        if (statusVal) params.push(`status=${encodeURIComponent(statusVal)}`);
+
+        if (params.length > 0) url += `?${params.join('&')}`;
+
+        const res = await fetch(url, { headers: getAuthHeaders() });
+        if (!res.ok) {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">Failed to load attempts (HTTP ${res.status}).</td></tr>`;
+            return;
+        }
+
+        const attempts = await res.json();
+        allAttemptsCache = attempts;
+        countBadge.textContent = attempts.length;
+
+        if (attempts.length === 0) {
+            tbody.innerHTML = '';
+            emptyState.classList.remove('d-none');
+            return;
+        }
+
+        emptyState.classList.add('d-none');
+        tbody.innerHTML = attempts.map(att => renderAttemptRow(att)).join('');
+    } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">Error loading attempts: ${escapeHtml(e.message)}</td></tr>`;
+    }
+}
+
+function renderAttemptRow(att) {
+    const isCode = att.question_type === 'CODE';
+    const isCompleted = att.status === 'COMPLETED';
+    
+    // Type Badge
+    const typeBadge = isCode
+        ? `<span class="badge bg-info-subtle text-info border border-info px-2 py-1">Coding</span>`
+        : `<span class="badge bg-primary-subtle text-primary border border-primary px-2 py-1">MCQ</span>`;
+
+    // Status Badge
+    const statusBadge = isCompleted
+        ? `<span class="badge bg-success-subtle text-success border border-success">COMPLETED</span>`
+        : `<span class="badge bg-warning-subtle text-warning border border-warning">IN PROGRESS</span>`;
+
+    // Difficulty Badge
+    let diffColor = 'bg-secondary';
+    if (att.difficulty === 'EASY') diffColor = 'bg-success text-white';
+    else if (att.difficulty === 'MEDIUM') diffColor = 'bg-warning text-dark';
+    else if (att.difficulty === 'HARD') diffColor = 'bg-danger text-white';
+    const diffBadge = `<span class="badge ${diffColor} font-monospace" style="font-size: 0.72rem;">${escapeHtml(att.difficulty || 'EASY')}</span>`;
+
+    // Language Badge (for code)
+    const langBadge = (isCode && att.language) 
+        ? `<span class="badge bg-dark border border-secondary text-info ms-1">${escapeHtml(att.language.toUpperCase())}</span>`
+        : '';
+
+    // Date formatting
+    const dateObj = new Date(att.started_at);
+    const dateStr = dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    const timeStr = dateObj.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+
+    // Action button
+    let actionBtn = '';
+    if (isCode) {
+        actionBtn = isCompleted
+            ? `<a href="/coding/result/${att.attempt_id}/" class="btn btn-outline-info btn-sm py-1 px-3">View Result</a>`
+            : `<a href="/coding/assessment/${att.attempt_id}/" class="btn btn-warning btn-sm py-1 px-3 text-dark fw-semibold">Resume</a>`;
+    } else {
+        actionBtn = isCompleted
+            ? `<a href="/assessments/mcq/${att.attempt_id}/result/" class="btn btn-outline-info btn-sm py-1 px-3">View Result</a>`
+            : `<a href="/assessments/mcq/${att.attempt_id}/" class="btn btn-primary btn-sm py-1 px-3 fw-semibold">Resume</a>`;
+    }
+
+    // Score display
+    const scoreDisplay = `${att.total_score} / ${att.max_score}`;
+    const pctBadgeClass = att.percentage >= 70 ? 'text-success' : (att.percentage >= 40 ? 'text-warning' : 'text-danger');
+
+    return `
+        <tr>
+            <td class="font-monospace text-muted">#${att.attempt_id}</td>
+            <td>
+                <div class="d-flex align-items-center gap-2">
+                    ${typeBadge}
+                    <strong class="text-light">${escapeHtml(att.category)}</strong>
+                    ${langBadge}
+                </div>
+            </td>
+            <td>${diffBadge}</td>
+            <td class="font-monospace text-light">${scoreDisplay}</td>
+            <td>
+                <span class="font-monospace fw-bold ${pctBadgeClass}">${att.percentage}%</span>
+            </td>
+            <td>${statusBadge}</td>
+            <td class="small text-secondary">
+                <div>${dateStr}</div>
+                <div class="text-muted" style="font-size: 0.75rem;">${timeStr}</div>
+            </td>
+            <td class="text-end">
+                ${actionBtn}
+            </td>
+        </tr>
+    `;
+}
+
+function setTypeFilter(type, btn) {
+    currentTypeFilter = type;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    loadAttempts();
+}
+
+function applyFilters() {
+    loadAttempts();
+}
+</script>
+{% endblock %}
+

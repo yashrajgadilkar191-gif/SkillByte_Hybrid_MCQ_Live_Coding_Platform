@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+
+{% block title %}Start MCQ Assessment — SKILLBYTE{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-lg border-0 bg-glass text-light">
+            <div class="card-body p-4 p-md-5">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+                    <div>
+                        <span class="badge bg-primary px-3 py-1 mb-2">Theoretical Assessment</span>
+                        <h2 class="fw-bold mb-1">Select MCQ Subject & Difficulty</h2>
+                        <p class="text-secondary small mb-0">Configure your assessment settings to start practicing.</p>
+                    </div>
+                    <div id="user-mode-pill">
+                        <!-- Populated by JS: Student vs Guest badge -->
+                    </div>
+                </div>
+
+                <!-- Error Alert -->
+                <div id="setup-error-alert" class="alert alert-danger d-none small py-2 px-3 mb-3" role="alert"></div>
+
+                <form id="mcq-setup-form">
+                    <!-- Category Selection -->
+                    <div class="mb-4">
+                        <label class="form-label text-light fw-semibold mb-2">1. Select Subject / Category</label>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="card bg-surface border border-secondary border-opacity-25 h-100 p-3 cursor-pointer category-card">
+                                    <input type="radio" name="category" value="General Knowledge" class="form-check-input me-2" checked>
+                                    <div class="mt-2">
+                                        <h6 class="fw-bold text-light mb-1">General Knowledge</h6>
+                                        <p class="text-secondary small mb-0">Current events, history & science facts</p>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="card bg-surface border border-secondary border-opacity-25 h-100 p-3 cursor-pointer category-card">
+                                    <input type="radio" name="category" value="English" class="form-check-input me-2">
+                                    <div class="mt-2">
+                                        <h6 class="fw-bold text-light mb-1">English</h6>
+                                        <p class="text-secondary small mb-0">Grammar, vocabulary & literary devices</p>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="card bg-surface border border-secondary border-opacity-25 h-100 p-3 cursor-pointer category-card">
+                                    <input type="radio" name="category" value="Mathematics" class="form-check-input me-2">
+                                    <div class="mt-2">
+                                        <h6 class="fw-bold text-light mb-1">Mathematics</h6>
+                                        <p class="text-secondary small mb-0">Algebra, arithmetic & reasoning</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Difficulty Selection -->
+                    <div class="mb-4">
+                        <label class="form-label text-light fw-semibold mb-2">2. Choose Difficulty Level</label>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="card bg-surface border border-secondary border-opacity-25 p-3 cursor-pointer difficulty-card">
+                                    <input type="radio" name="difficulty" value="EASY" class="form-check-input me-2" checked>
+                                    <div class="mt-2">
+                                        <span class="badge bg-success-subtle text-success border border-success mb-1">Easy</span>
+                                        <p class="text-secondary small mb-0">Foundational concept check</p>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="card bg-surface border border-secondary border-opacity-25 p-3 cursor-pointer difficulty-card">
+                                    <input type="radio" name="difficulty" value="MEDIUM" class="form-check-input me-2">
+                                    <div class="mt-2">
+                                        <span class="badge bg-warning-subtle text-warning border border-warning mb-1">Medium</span>
+                                        <p class="text-secondary small mb-0">Moderate challenge</p>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="card bg-surface border border-secondary border-opacity-25 p-3 cursor-pointer difficulty-card">
+                                    <input type="radio" name="difficulty" value="HARD" class="form-check-input me-2">
+                                    <div class="mt-2">
+                                        <span class="badge bg-danger-subtle text-danger border border-danger mb-1">Hard</span>
+                                        <p class="text-secondary small mb-0">Advanced analytical questions</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Question Count Selection -->
+                    <div class="mb-4">
+                        <label for="question-count" class="form-label text-light fw-semibold">3. Number of Questions</label>
+                        <select id="question-count" class="form-select bg-darker text-light border-secondary border-opacity-50" style="max-width: 250px;">
+                            <option value="5" selected>5 Questions</option>
+                            <option value="10">10 Questions</option>
+                        </select>
+                        <div class="form-text text-secondary small">Questions are safely selected and randomized server-side.</div>
+                    </div>
+
+                    <hr class="border-secondary opacity-25 my-4">
+
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                        <a href="/dashboard/" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" id="start-btn" class="btn btn-primary px-4 py-2 fw-semibold d-flex align-items-center gap-2">
+                            <span id="start-spinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                            <span id="start-btn-text">Start Assessment</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const userModePill = document.getElementById('user-mode-pill');
+    if (Auth.isLoggedIn()) {
+        const user = Auth.getUser();
+        userModePill.innerHTML = `<span class="badge bg-primary px-3 py-2">Candidate: ${escapeHtml(user?.name || 'Student')}</span>`;
+    } else if (Auth.isGuest()) {
+        userModePill.innerHTML = `<span class="badge bg-warning text-dark px-3 py-2">Guest Mode (Temporary Session)</span>`;
+    } else {
+        // If neither logged in nor guest, activate guest mode by default
+        Auth.setGuestMode();
+        userModePill.innerHTML = `<span class="badge bg-warning text-dark px-3 py-2">Guest Mode (Temporary Session)</span>`;
+    }
+
+    const form = document.getElementById('mcq-setup-form');
+    const errorAlert = document.getElementById('setup-error-alert');
+    const startBtn = document.getElementById('start-btn');
+    const spinner = document.getElementById('start-spinner');
+    const btnText = document.getElementById('start-btn-text');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorAlert.classList.add('d-none');
+
+        const category = document.querySelector('input[name="category"]:checked').value;
+        const difficulty = document.querySelector('input[name="difficulty"]:checked').value;
+        const count = parseInt(document.getElementById('question-count').value, 10);
+
+        startBtn.disabled = true;
+        spinner.classList.remove('d-none');
+        btnText.textContent = "Generating Assessment...";
+
+        try {
+            const headers = { 'Content-Type': 'application/json' };
+            const access = Auth.getAccessToken();
+            if (access) {
+                headers['Authorization'] = `Bearer ${access}`;
+            }
+
+            const res = await fetch('/api/assessments/mcq/start/', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({
+                    category: category,
+                    difficulty: difficulty,
+                    question_count: count
+                })
+            });
+
+            const data = await res.json();
+
+            if (res.status === 201) {
+                // Save session id if guest
+                if (data.session_id) {
+                    localStorage.setItem('skillbyte_guest_session_id', data.session_id);
+                }
+                // Store active assessment payload in sessionStorage for fast client navigation
+                sessionStorage.setItem(`mcq_attempt_${data.attempt_id}`, JSON.stringify(data));
+                window.location.href = `/assessments/mcq/${data.attempt_id}/`;
+            } else {
+                errorAlert.textContent = data.error || "Failed to start assessment. Please try again.";
+                errorAlert.classList.remove('d-none');
+            }
+        } catch (err) {
+            errorAlert.textContent = "Network error: Unable to connect to assessment service.";
+            errorAlert.classList.remove('d-none');
+        } finally {
+            startBtn.disabled = false;
+            spinner.classList.add('d-none');
+            btnText.textContent = "Start Assessment";
+        }
+    });
+});
+</script>
+{% endblock %}
+

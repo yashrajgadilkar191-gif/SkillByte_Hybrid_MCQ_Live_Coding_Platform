@@ -1,0 +1,493 @@
+{% extends 'base.html' %}
+
+{% block title %}Leaderboard — SKILLBYTE{% endblock %}
+
+{% block extra_css %}
+<style>
+    .podium-container {
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+        flex-wrap: wrap;
+    }
+    .podium-card {
+        background: rgba(15, 23, 42, 0.75);
+        border-radius: 16px;
+        padding: 1.5rem 1.25rem;
+        text-align: center;
+        position: relative;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        min-width: 220px;
+        flex: 1;
+        max-width: 280px;
+    }
+    .podium-card:hover {
+        transform: translateY(-4px);
+    }
+    .podium-1 {
+        border: 2px solid rgba(234, 179, 8, 0.6);
+        box-shadow: 0 8px 32px rgba(234, 179, 8, 0.15);
+        order: 2;
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+    .podium-2 {
+        border: 2px solid rgba(148, 163, 184, 0.5);
+        box-shadow: 0 6px 24px rgba(148, 163, 184, 0.12);
+        order: 1;
+    }
+    .podium-3 {
+        border: 2px solid rgba(205, 127, 50, 0.6);
+        box-shadow: 0 6px 24px rgba(205, 127, 50, 0.12);
+        order: 3;
+    }
+    .medal-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .tier-badge {
+        font-size: 0.72rem;
+        padding: 3px 8px;
+        border-radius: 9999px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .filter-btn.active {
+        background-color: #3b82f6 !important;
+        border-color: #3b82f6 !important;
+        color: #fff !important;
+    }
+    .category-chip {
+        cursor: pointer;
+        padding: 5px 14px;
+        border-radius: 20px;
+        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #cbd5e1;
+        font-size: 0.85rem;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+    .category-chip:hover, .category-chip.active {
+        background: #0d6efd;
+        color: #fff;
+        border-color: #0d6efd;
+    }
+    .current-user-row {
+        background-color: rgba(59, 130, 246, 0.18) !important;
+        border-left: 4px solid #3b82f6 !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-11 col-xl-10">
+
+        <!-- Page Header -->
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-1 small">
+                        <li class="breadcrumb-item"><a href="/dashboard/" class="text-info text-decoration-none">&larr; Dashboard</a></li>
+                        <li class="breadcrumb-item active text-secondary" aria-current="page">Leaderboard</li>
+                    </ol>
+                </nav>
+                <h3 class="fw-bold text-light mb-1">
+                    <i class="bi bi-trophy-fill text-warning me-2"></i>SkillByte Global Leaderboard
+                </h3>
+                <p class="text-secondary small mb-0">
+                    Rankings based on the <strong>Best Score per Unique Question</strong> model across theory and live coding.
+                </p>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-outline-secondary btn-sm" onclick="loadLeaderboard()" title="Refresh Leaderboard">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- Current User Standing Card -->
+        <div id="user-standing-container" class="mb-4">
+            <!-- Rendered dynamically -->
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="card bg-dark border-secondary border-opacity-25 shadow-sm mb-4">
+            <div class="card-body p-3">
+                <div class="row g-3 align-items-center justify-content-between">
+                    <!-- Timeframe Toggle -->
+                    <div class="col-auto">
+                        <div class="btn-group btn-group-sm" role="group" id="timeframe-group">
+                            <button type="button" class="btn btn-outline-light filter-btn active" data-timeframe="all_time" onclick="setTimeframe('all_time')">All-Time</button>
+                            <button type="button" class="btn btn-outline-light filter-btn" data-timeframe="this_month" onclick="setTimeframe('this_month')">This Month</button>
+                            <button type="button" class="btn btn-outline-light filter-btn" data-timeframe="this_week" onclick="setTimeframe('this_week')">This Week</button>
+                        </div>
+                    </div>
+
+                    <!-- Search Input -->
+                    <div class="col-md-4 col-sm-6">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-secondary border-0 text-white-50"><i class="bi bi-search"></i></span>
+                            <input type="text" id="leaderboard-search" class="form-control bg-dark text-light border-secondary" placeholder="Search by student name..." oninput="handleSearch()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category Chips -->
+                <div class="mt-3 pt-2 border-top border-secondary border-opacity-25 d-flex align-items-center gap-2 flex-wrap" id="category-chips">
+                    <span class="small text-secondary me-1"><i class="bi bi-funnel me-1"></i>Category:</span>
+                    <button type="button" class="category-chip active" data-category="" onclick="setCategory('')">All Categories</button>
+                    <!-- Dynamically populated or static categories -->
+                    <button type="button" class="category-chip" data-category="Python" onclick="setCategory('Python')">Python</button>
+                    <button type="button" class="category-chip" data-category="Algorithms" onclick="setCategory('Algorithms')">Algorithms</button>
+                    <button type="button" class="category-chip" data-category="Web Development" onclick="setCategory('Web Development')">Web Development</button>
+                    <button type="button" class="category-chip" data-category="Databases" onclick="setCategory('Databases')">Databases</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top 3 Podium -->
+        <div id="podium-section" class="podium-container" style="display: none;">
+            <!-- Rendered by JS -->
+        </div>
+
+        <!-- Leaderboard Table Card -->
+        <div class="card bg-dark border-secondary border-opacity-25 shadow-sm">
+            <div class="card-header bg-black bg-opacity-25 border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
+                <span class="fw-semibold text-light" id="table-title">Rankings</span>
+                <span class="text-secondary small" id="total-students-count">0 students qualified</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-dark table-hover mb-0 align-middle">
+                    <thead class="text-secondary small border-secondary border-opacity-25">
+                        <tr>
+                            <th class="ps-3" style="width: 70px;">Rank</th>
+                            <th>Student</th>
+                            <th>Skill Tier</th>
+                            <th class="text-end">Theory Pts</th>
+                            <th class="text-end">Coding Pts</th>
+                            <th class="text-end">Unified Score</th>
+                            <th class="text-center pe-3">Attempts</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-table-body">
+                        <tr>
+                            <td colspan="7" class="text-center text-secondary py-5">
+                                <div class="spinner-border spinner-border-sm text-info me-2" role="status"></div>
+                                Loading leaderboard rankings...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentCategory = '';
+    let currentTimeframe = 'all_time';
+    let fullLeaderboardData = [];
+    let currentUserRankData = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.Auth) {
+            Auth.updateNavUI();
+        }
+        loadLeaderboard();
+    });
+
+    function setTimeframe(tf) {
+        currentTimeframe = tf;
+        document.querySelectorAll('#timeframe-group .filter-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.timeframe === tf);
+        });
+        loadLeaderboard();
+    }
+
+    function setCategory(cat) {
+        currentCategory = cat;
+        document.querySelectorAll('#category-chips .category-chip').forEach(chip => {
+            chip.classList.toggle('active', chip.dataset.category === cat);
+        });
+        loadLeaderboard();
+    }
+
+    async function loadLeaderboard() {
+        const tbody = document.getElementById('leaderboard-table-body');
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center text-secondary py-4">
+                    <div class="spinner-border spinner-border-sm text-info me-2" role="status"></div>
+                    Updating rankings...
+                </td>
+            </tr>
+        `;
+
+        try {
+            let url = `/api/leaderboard/?timeframe=${encodeURIComponent(currentTimeframe)}`;
+            if (currentCategory) {
+                url += `&category=${encodeURIComponent(currentCategory)}`;
+            }
+
+            const res = await (typeof Auth !== 'undefined' ? Auth.fetchWithAuth(url) : fetch(url));
+            if (!res.ok) {
+                throw new Error(`Failed to load leaderboard (${res.status})`);
+            }
+
+            const data = await res.json();
+            fullLeaderboardData = data.leaderboard || [];
+            currentUserRankData = data.current_user_rank || null;
+
+            renderUserStanding();
+            renderPodium(fullLeaderboardData);
+            renderTable(fullLeaderboardData);
+
+            const countEl = document.getElementById('total-students-count');
+            if (countEl) countEl.innerText = `${fullLeaderboardData.length} student${fullLeaderboardData.length === 1 ? '' : 's'} ranked`;
+
+            const titleEl = document.getElementById('table-title');
+            if (titleEl) {
+                const catLabel = currentCategory ? `${currentCategory} Rankings` : 'Global Rankings';
+                titleEl.innerText = catLabel;
+            }
+
+        } catch (err) {
+            console.error('Error fetching leaderboard:', err);
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center text-danger py-4">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>Could not load leaderboard data. Please try again.
+                    </td>
+                </tr>
+            `;
+        }
+    }
+
+    function renderUserStanding() {
+        const container = document.getElementById('user-standing-container');
+        if (!container) return;
+
+        const isGuest = typeof Auth !== 'undefined' ? Auth.isGuest() : false;
+        const isLoggedIn = typeof Auth !== 'undefined' ? Auth.isLoggedIn() : false;
+
+        if (isGuest || (!isLoggedIn && !currentUserRankData)) {
+            container.innerHTML = `
+                <div class="alert alert-dark border-secondary border-opacity-50 d-flex align-items-center justify-content-between flex-wrap gap-3 py-3 px-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <i class="bi bi-info-circle-fill text-warning fs-3"></i>
+                        <div>
+                            <div class="fw-semibold text-light">Viewing as Guest</div>
+                            <div class="text-secondary small">Guest performance is not recorded on the official leaderboard. Sign in or register to track your score!</div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="/login/" class="btn btn-outline-info btn-sm">Log In</a>
+                        <a href="/register/" class="btn btn-primary btn-sm">Create Account</a>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        if (currentUserRankData) {
+            const r = currentUserRankData;
+            const tierBadge = getTierBadge(r.skill_tier);
+            container.innerHTML = `
+                <div class="card bg-primary bg-opacity-10 border-primary border-opacity-50 shadow-sm">
+                    <div class="card-body p-3 d-flex align-items-center justify-content-between flex-wrap gap-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold fs-4" style="width: 52px; height: 52px;">
+                                #${r.rank}
+                            </div>
+                            <div>
+                                <div class="text-light fw-bold fs-5 d-flex align-items-center gap-2">
+                                    Your Platform Standing
+                                    ${tierBadge}
+                                </div>
+                                <div class="text-secondary small">
+                                    ${escapeHtml(r.username)} &bull; ${r.total_attempts} attempts &bull; Category: ${currentCategory || 'All'}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-4 text-center">
+                            <div>
+                                <div class="text-secondary small">Theory</div>
+                                <div class="fw-bold text-info">${r.theory_score}</div>
+                            </div>
+                            <div>
+                                <div class="text-secondary small">Coding</div>
+                                <div class="fw-bold text-success">${r.coding_score}</div>
+                            </div>
+                            <div class="ps-3 border-start border-secondary border-opacity-50">
+                                <div class="text-secondary small">Unified Score</div>
+                                <div class="fw-bolder text-warning fs-4">${r.unified_score}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            container.innerHTML = `
+                <div class="alert alert-dark border-secondary border-opacity-50 py-3 px-4 d-flex align-items-center gap-3">
+                    <i class="bi bi-clock-history text-secondary fs-4"></i>
+                    <div>
+                        <div class="fw-semibold text-light">No Qualified Attempts Yet</div>
+                        <div class="text-secondary small">Complete an assessment to earn your place on the leaderboard!</div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    function renderPodium(list) {
+        const podiumEl = document.getElementById('podium-section');
+        if (!podiumEl) return;
+
+        if (list.length < 2) {
+            podiumEl.style.display = 'none';
+            return;
+        }
+
+        podiumEl.style.display = 'flex';
+        const p1 = list[0];
+        const p2 = list[1];
+        const p3 = list[2] || null;
+
+        let html = '';
+
+        // Silver #2
+        if (p2) {
+            html += `
+                <div class="podium-card podium-2">
+                    <div class="medal-icon text-secondary"><i class="bi bi-award-fill"></i></div>
+                    <div class="badge bg-secondary mb-2">Rank #2</div>
+                    <h5 class="fw-bold text-light mb-1">${escapeHtml(p2.user_name || p2.username)}</h5>
+                    <div class="mb-2">${getTierBadge(p2.skill_tier)}</div>
+                    <div class="fs-4 fw-bolder text-warning mb-1">${p2.unified_score} <span class="fs-6 text-secondary font-monospace">pts</span></div>
+                    <div class="small text-secondary">Theory: ${p2.theory_score} | Code: ${p2.coding_score}</div>
+                </div>
+            `;
+        }
+
+        // Gold #1
+        if (p1) {
+            html += `
+                <div class="podium-card podium-1">
+                    <div class="medal-icon text-warning"><i class="bi bi-trophy-fill"></i></div>
+                    <div class="badge bg-warning text-dark mb-2 fw-bold">Champion #1</div>
+                    <h4 class="fw-bold text-light mb-1">${escapeHtml(p1.user_name || p1.username)}</h4>
+                    <div class="mb-2">${getTierBadge(p1.skill_tier)}</div>
+                    <div class="fs-3 fw-bolder text-warning mb-1">${p1.unified_score} <span class="fs-6 text-secondary font-monospace">pts</span></div>
+                    <div class="small text-secondary">Theory: ${p1.theory_score} | Code: ${p1.coding_score}</div>
+                </div>
+            `;
+        }
+
+        // Bronze #3
+        if (p3) {
+            html += `
+                <div class="podium-card podium-3">
+                    <div class="medal-icon" style="color: #cd7f32;"><i class="bi bi-award"></i></div>
+                    <div class="badge mb-2" style="background-color: #cd7f32; color: #fff;">Rank #3</div>
+                    <h5 class="fw-bold text-light mb-1">${escapeHtml(p3.user_name || p3.username)}</h5>
+                    <div class="mb-2">${getTierBadge(p3.skill_tier)}</div>
+                    <div class="fs-4 fw-bolder text-warning mb-1">${p3.unified_score} <span class="fs-6 text-secondary font-monospace">pts</span></div>
+                    <div class="small text-secondary">Theory: ${p3.theory_score} | Code: ${p3.coding_score}</div>
+                </div>
+            `;
+        }
+
+        podiumEl.innerHTML = html;
+    }
+
+    function renderTable(list) {
+        const tbody = document.getElementById('leaderboard-table-body');
+        if (!tbody) return;
+
+        if (!list || list.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center text-secondary py-5">
+                        <i class="bi bi-inbox fs-3 d-block mb-2 text-secondary"></i>
+                        No student submissions found for this scope.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        const currentUsername = window.Auth && Auth.getUser() ? Auth.getUser().name : null;
+
+        tbody.innerHTML = list.map(item => {
+            const isMe = currentUserRankData && (item.user_id === currentUserRankData.user_id);
+            const rowClass = isMe ? 'current-user-row' : '';
+            const rankBadge = getRankBadge(item.rank);
+
+            return `
+                <tr class="${rowClass}">
+                    <td class="ps-3 fw-bold">${rankBadge}</td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="fw-semibold text-light">${escapeHtml(item.user_name || item.username)}</span>
+                            ${isMe ? '<span class="badge bg-primary text-white x-small">You</span>' : ''}
+                        </div>
+                        <div class="text-secondary small font-monospace">@${escapeHtml(item.username)}</div>
+                    </td>
+                    <td>${getTierBadge(item.skill_tier)}</td>
+                    <td class="text-end text-info font-monospace">${item.theory_score}</td>
+                    <td class="text-end text-success font-monospace">${item.coding_score}</td>
+                    <td class="text-end fw-bold text-warning font-monospace fs-6">${item.unified_score}</td>
+                    <td class="text-center pe-3 text-secondary small">${item.total_attempts}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function handleSearch() {
+        const term = document.getElementById('leaderboard-search').value.toLowerCase().trim();
+        if (!term) {
+            renderTable(fullLeaderboardData);
+            return;
+        }
+
+        const filtered = fullLeaderboardData.filter(item => {
+            const u = (item.username || '').toLowerCase();
+            const n = (item.user_name || '').toLowerCase();
+            return u.includes(term) || n.includes(term);
+        });
+
+        renderTable(filtered);
+    }
+
+    function getRankBadge(rank) {
+        if (rank === 1) return `<span class="badge bg-warning text-dark"><i class="bi bi-trophy-fill me-1"></i>1</span>`;
+        if (rank === 2) return `<span class="badge bg-secondary"><i class="bi bi-award-fill me-1"></i>2</span>`;
+        if (rank === 3) return `<span class="badge" style="background-color: #cd7f32; color: #fff;"><i class="bi bi-award me-1"></i>3</span>`;
+        return `<span class="text-secondary font-monospace">#${rank}</span>`;
+    }
+
+    function getTierBadge(tier) {
+        switch (tier) {
+            case 'Grandmaster':
+                return `<span class="badge tier-badge bg-danger text-white"><i class="bi bi-gem me-1"></i>Grandmaster</span>`;
+            case 'Master':
+                return `<span class="badge tier-badge bg-warning text-dark"><i class="bi bi-fire me-1"></i>Master</span>`;
+            case 'Expert':
+                return `<span class="badge tier-badge bg-primary text-white"><i class="bi bi-lightning-fill me-1"></i>Expert</span>`;
+            case 'Intermediate':
+                return `<span class="badge tier-badge bg-info text-dark"><i class="bi bi-check2-circle me-1"></i>Intermediate</span>`;
+            default:
+                return `<span class="badge tier-badge bg-secondary text-white">Beginner</span>`;
+        }
+    }
+</script>
+{% endblock %}
+

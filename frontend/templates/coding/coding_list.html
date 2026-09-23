@@ -1,0 +1,255 @@
+{% extends 'base.html' %}
+
+{% block title %}Coding Problems — SKILLBYTE{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-11">
+        <!-- Header Hero -->
+        <div class="card shadow-lg border-0 bg-glass text-light mb-4">
+            <div class="card-body p-4 p-md-5">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+                    <div>
+                        <span class="badge bg-primary px-3 py-1 mb-2">Live Coding Assessments</span>
+                        <h2 class="fw-bold mb-1">Problem Directory</h2>
+                        <p class="text-secondary small mb-0">Select a problem to launch the Monaco Editor coding workspace.</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="/coding/setup/" class="btn btn-primary btn-sm px-3 fw-semibold">
+                            &plus; Custom Challenge Setup
+                        </a>
+                        <a href="/dashboard/" class="btn btn-outline-secondary btn-sm">
+                            Dashboard
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Filters & Search -->
+                <div class="row g-3 align-items-center mb-4">
+                    <div class="col-md-5">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-darker border-secondary text-secondary">Search</span>
+                            <input type="text" id="problem-search" class="form-control bg-darker border-secondary text-light" placeholder="Search problem title...">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="input-group input-group-sm">
+                            <label class="input-group-text bg-darker border-secondary text-secondary" for="filter-category">Category</label>
+                            <select id="filter-category" class="form-select bg-darker border-secondary text-light">
+                                <option value="">All Categories</option>
+                                <option value="Python">Python</option>
+                                <option value="Java">Java</option>
+                                <option value="C++">C++</option>
+                                <option value="DSA">DSA</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="input-group input-group-sm">
+                            <label class="input-group-text bg-darker border-secondary text-secondary" for="filter-difficulty">Difficulty</label>
+                            <select id="filter-difficulty" class="form-select bg-darker border-secondary text-light">
+                                <option value="">All Levels</option>
+                                <option value="EASY">Easy</option>
+                                <option value="MEDIUM">Medium</option>
+                                <option value="HARD">Hard</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Problems Table -->
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover mb-0 align-middle">
+                        <thead class="text-secondary small">
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th>Problem Title</th>
+                                <th>Category</th>
+                                <th>Difficulty</th>
+                                <th>Marks</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="problems-table-body">
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-secondary">
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                    Loading coding challenges...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Start Confirmation Modal -->
+<div class="modal fade" id="startProblemModal" tabindex="-1" aria-labelledby="startModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-darker text-light border border-secondary">
+            <div class="modal-header border-secondary border-opacity-25">
+                <h5 class="modal-title fw-bold" id="startModalLabel">Start Coding Assessment</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h5 id="modal-problem-title" class="fw-bold text-primary mb-2">Problem</h5>
+                <p id="modal-problem-meta" class="text-secondary small mb-3">Category &bull; Difficulty</p>
+                
+                <div class="mb-3">
+                    <label for="modal-language-select" class="form-label text-light small fw-semibold">Select Programming Language</label>
+                    <select id="modal-language-select" class="form-select bg-surface border-secondary text-light">
+                        <option value="python">Python (Python 3.10)</option>
+                        <option value="java">Java (OpenJDK 17)</option>
+                        <option value="cpp">C++ (GCC 9.2)</option>
+                    </select>
+                </div>
+
+                <div class="alert alert-info py-2 px-3 small border-0 bg-primary bg-opacity-10 text-info">
+                    <strong>Notice:</strong> Submissions will be recorded with <code>PENDING</code> status. Judge0 execution will be connected in Phase 6.
+                </div>
+            </div>
+            <div class="modal-footer border-secondary border-opacity-25">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="confirm-start-btn" class="btn btn-primary btn-sm px-3 fw-semibold">
+                    Launch Workspace &rarr;
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let allProblems = [];
+let selectedProblem = null;
+const modal = new bootstrap.Modal(document.getElementById('startProblemModal'));
+
+async function loadProblems() {
+    try {
+        const res = await fetch('/api/questions/?type=CODE');
+        if (res.ok) {
+            allProblems = await res.json();
+            renderProblems();
+        } else {
+            document.getElementById('problems-table-body').innerHTML = `
+                <tr><td colspan="6" class="text-center py-4 text-danger">Failed to load problems.</td></tr>
+            `;
+        }
+    } catch (e) {
+        document.getElementById('problems-table-body').innerHTML = `
+            <tr><td colspan="6" class="text-center py-4 text-danger">Network error connecting to questions API.</td></tr>
+        `;
+    }
+}
+
+function renderProblems() {
+    const search = document.getElementById('problem-search').value.toLowerCase().trim();
+    const cat = document.getElementById('filter-category').value;
+    const diff = document.getElementById('filter-difficulty').value;
+
+    const filtered = allProblems.filter(p => {
+        const matchSearch = p.title.toLowerCase().includes(search);
+        const matchCat = !cat || (p.subject && p.subject.toLowerCase() === cat.toLowerCase());
+        const matchDiff = !diff || (p.difficulty && p.difficulty.toUpperCase() === diff.toUpperCase());
+        return matchSearch && matchCat && matchDiff;
+    });
+
+    const tbody = document.getElementById('problems-table-body');
+    if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-secondary">No coding challenges found matching criteria.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = filtered.map((p, idx) => {
+        let diffBadge = 'bg-success-subtle text-success border border-success';
+        if (p.difficulty === 'MEDIUM') diffBadge = 'bg-warning-subtle text-warning border border-warning';
+        if (p.difficulty === 'HARD') diffBadge = 'bg-danger-subtle text-danger border border-danger';
+
+        return `
+            <tr>
+                <td class="text-secondary small font-monospace">${idx + 1}</td>
+                <td class="fw-semibold text-light">${escapeHtml(p.title)}</td>
+                <td><span class="badge bg-secondary">${escapeHtml(p.subject || 'Coding')}</span></td>
+                <td><span class="badge ${diffBadge}">${escapeHtml(p.difficulty)}</span></td>
+                <td><span class="badge bg-dark border border-secondary">${p.marks} Marks</span></td>
+                <td class="text-end">
+                    <button class="btn btn-primary btn-sm px-3" onclick="openStartModal(${p.id})">
+                        Solve &rarr;
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function openStartModal(problemId) {
+    selectedProblem = allProblems.find(p => p.id === problemId);
+    if (!selectedProblem) return;
+
+    document.getElementById('modal-problem-title').textContent = selectedProblem.title;
+    document.getElementById('modal-problem-meta').textContent = `${selectedProblem.subject || 'Coding'} • ${selectedProblem.difficulty} • ${selectedProblem.marks} Marks`;
+
+    // Suggest language
+    const langSelect = document.getElementById('modal-language-select');
+    const subj = (selectedProblem.subject || '').toLowerCase();
+    if (subj.includes('java')) langSelect.value = 'java';
+    else if (subj.includes('c++') || subj.includes('cpp')) langSelect.value = 'cpp';
+    else langSelect.value = 'python';
+
+    modal.show();
+}
+
+document.getElementById('confirm-start-btn').addEventListener('click', async () => {
+    if (!selectedProblem) return;
+
+    const language = document.getElementById('modal-language-select').value;
+    const btn = document.getElementById('confirm-start-btn');
+    btn.disabled = true;
+    btn.textContent = "Starting...";
+
+    try {
+        const headers = { 'Content-Type': 'application/json' };
+        const access = Auth.getAccessToken();
+        if (access) headers['Authorization'] = `Bearer ${access}`;
+
+        const payload = {
+            question_id: selectedProblem.id,
+            language: language,
+            time_limit_seconds: 1800
+        };
+
+        const res = await fetch('/api/assessments/coding/start/', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (res.status === 201) {
+            if (data.session_id) {
+                localStorage.setItem('skillbyte_guest_session_id', data.session_id);
+            }
+            window.location.href = `/coding/assessment/${data.attempt_id}/`;
+        } else {
+            alert(data.error || "Failed to start coding assessment.");
+            btn.disabled = false;
+            btn.textContent = "Launch Workspace →";
+        }
+    } catch (err) {
+        alert("Network error: Could not contact assessment service.");
+        btn.disabled = false;
+        btn.textContent = "Launch Workspace →";
+    }
+});
+
+document.getElementById('problem-search').addEventListener('input', renderProblems);
+document.getElementById('filter-category').addEventListener('change', renderProblems);
+document.getElementById('filter-difficulty').addEventListener('change', renderProblems);
+
+document.addEventListener('DOMContentLoaded', loadProblems);
+</script>
+{% endblock %}
+

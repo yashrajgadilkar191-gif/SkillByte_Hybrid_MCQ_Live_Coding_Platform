@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+
+{% block title %}Start Coding Assessment — SKILLBYTE{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-lg border-0 bg-glass text-light">
+            <div class="card-body p-4 p-md-5">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+                    <div>
+                        <span class="badge bg-primary px-3 py-1 mb-2">Live Coding Assessment</span>
+                        <h2 class="fw-bold mb-1">Coding Assessment Setup</h2>
+                        <p class="text-secondary small mb-0">Select your programming language, topic, and difficulty to begin.</p>
+                    </div>
+                    <div id="user-mode-pill">
+                        <!-- Populated by JS: Student vs Guest badge -->
+                    </div>
+                </div>
+
+                <!-- Error Alert -->
+                <div id="setup-error-alert" class="alert alert-danger d-none small py-2 px-3 mb-3" role="alert"></div>
+
+                <form id="coding-setup-form">
+                    <!-- Programming Language Selection -->
+                    <div class="mb-4">
+                        <label class="form-label text-light fw-semibold mb-2">1. Programming Language</label>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="card bg-surface border border-secondary border-opacity-25 h-100 p-3 cursor-pointer category-card">
+                                    <input type="radio" name="language" value="python" class="form-check-input me-2" checked>
+                                    <div class="mt-2">
+                                        <h6 class="fw-bold text-light mb-1">Python</h6>
+                                        <p class="text-secondary small mb-0">Python 3.10 standard library</p>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="card bg-surface border border-secondary border-opacity-25 h-100 p-3 cursor-pointer category-card">
+                                    <input type="radio" name="language" value="java" class="form-check-input me-2">
+                                    <div class="mt-2">
+                                        <h6 class="fw-bold text-light mb-1">Java</h6>
+                                        <p class="text-secondary small mb-0">OpenJDK 17 / Solution class</p>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="card bg-surface border border-secondary border-opacity-25 h-100 p-3 cursor-pointer category-card">
+                                    <input type="radio" name="language" value="cpp" class="form-check-input me-2">
+                                    <div class="mt-2">
+                                        <h6 class="fw-bold text-light mb-1">C++</h6>
+                                        <p class="text-secondary small mb-0">GCC 9.2 with STL</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category / Topic Selection -->
+                    <div class="mb-4">
+                        <label class="form-label text-light fw-semibold mb-2">2. Topic / Category</label>
+                        <div class="row g-3">
+                            <div class="col-6 col-md-3">
+                                <label class="card bg-surface border border-secondary border-opacity-25 h-100 p-3 cursor-pointer category-card">
+                                    <input type="radio" name="category" value="Python" class="form-check-input me-2" checked>
+                                    <div class="mt-2">
+                                        <h6 class="fw-bold text-light mb-1">Python</h6>
+                                        <p class="text-secondary small mb-0">Python syntax & logic</p>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <label class="card bg-surface border border-secondary border-opacity-25 h-100 p-3 cursor-pointer category-card">
+                                    <input type="radio" name="category" value="Java" class="form-check-input me-2">
+                                    <div class="mt-2">
+                                        <h6 class="fw-bold text-light mb-1">Java</h6>
+                                        <p class="text-secondary small mb-0">Core Java algorithms</p>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <label class="card bg-surface border border-secondary border-opacity-25 h-100 p-3 cursor-pointer category-card">
+                                    <input type="radio" name="category" value="C++" class="form-check-input me-2">
+                                    <div class="mt-2">
+                                        <h6 class="fw-bold text-light mb-1">C++</h6>
+                                        <p class="text-secondary small mb-0">Competitive C++ code</p>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <label class="card bg-surface border border-secondary border-opacity-25 h-100 p-3 cursor-pointer category-card">
+                                    <input type="radio" name="category" value="DSA" class="form-check-input me-2">
+                                    <div class="mt-2">
+                                        <h6 class="fw-bold text-light mb-1">DSA</h6>
+                                        <p class="text-secondary small mb-0">Data structures & logic</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Difficulty Selection -->
+                    <div class="mb-4">
+                        <label class="form-label text-light fw-semibold mb-2">3. Difficulty Level</label>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="card bg-surface border border-secondary border-opacity-25 p-3 cursor-pointer difficulty-card">
+                                    <input type="radio" name="difficulty" value="EASY" class="form-check-input me-2" checked>
+                                    <div class="mt-2">
+                                        <span class="badge bg-success-subtle text-success border border-success mb-1">Easy</span>
+                                        <p class="text-secondary small mb-0">Straightforward logic</p>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="card bg-surface border border-secondary border-opacity-25 p-3 cursor-pointer difficulty-card">
+                                    <input type="radio" name="difficulty" value="MEDIUM" class="form-check-input me-2">
+                                    <div class="mt-2">
+                                        <span class="badge bg-warning-subtle text-warning border border-warning mb-1">Medium</span>
+                                        <p class="text-secondary small mb-0">Algorithmic complexity</p>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="card bg-surface border border-secondary border-opacity-25 p-3 cursor-pointer difficulty-card">
+                                    <input type="radio" name="difficulty" value="HARD" class="form-check-input me-2">
+                                    <div class="mt-2">
+                                        <span class="badge bg-danger-subtle text-danger border border-danger mb-1">Hard</span>
+                                        <p class="text-secondary small mb-0">Advanced optimization</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Time Limit -->
+                    <div class="mb-4">
+                        <label for="time-limit-select" class="form-label text-light fw-semibold">4. Assessment Time Limit</label>
+                        <select id="time-limit-select" class="form-select bg-darker text-light border-secondary border-opacity-50" style="max-width: 250px;">
+                            <option value="900">15 Minutes</option>
+                            <option value="1800" selected>30 Minutes</option>
+                            <option value="2700">45 Minutes</option>
+                            <option value="3600">60 Minutes</option>
+                        </select>
+                    </div>
+
+                    <div class="alert alert-info py-2 px-3 small border-0 bg-primary bg-opacity-10 text-info mb-4">
+                        <strong>Evaluation Notice:</strong> In Phase 5, submissions are validated, recorded in PostgreSQL, and marked as <code>PENDING</code>. Automated execution with Judge0 will be connected in Phase 6.
+                    </div>
+
+                    <hr class="border-secondary opacity-25 my-4">
+
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                        <a href="/coding/" class="btn btn-outline-secondary">Browse All Problems</a>
+                        <button type="submit" id="start-btn" class="btn btn-primary px-4 py-2 fw-semibold d-flex align-items-center gap-2">
+                            <span id="start-spinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                            <span id="start-btn-text">Launch Coding Workspace &rarr;</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const userModePill = document.getElementById('user-mode-pill');
+    if (Auth.isLoggedIn()) {
+        const user = Auth.getUser();
+        userModePill.innerHTML = `<span class="badge bg-primary px-3 py-2">Student: ${escapeHtml(user?.name || 'Student')}</span>`;
+    } else if (Auth.isGuest()) {
+        userModePill.innerHTML = `<span class="badge bg-warning text-dark px-3 py-2">Guest Session</span>`;
+    } else {
+        Auth.setGuestMode();
+        userModePill.innerHTML = `<span class="badge bg-warning text-dark px-3 py-2">Guest Session</span>`;
+    }
+
+    const form = document.getElementById('coding-setup-form');
+    const errorAlert = document.getElementById('setup-error-alert');
+    const startBtn = document.getElementById('start-btn');
+    const spinner = document.getElementById('start-spinner');
+    const btnText = document.getElementById('start-btn-text');
+
+    // Automatically sync category selection with language
+    const langRadios = document.querySelectorAll('input[name="language"]');
+    langRadios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            const lang = e.target.value;
+            const catRadios = document.querySelectorAll('input[name="category"]');
+            catRadios.forEach(cr => {
+                if (lang === 'python' && cr.value === 'Python') cr.checked = true;
+                if (lang === 'java' && cr.value === 'Java') cr.checked = true;
+                if (lang === 'cpp' && cr.value === 'C++') cr.checked = true;
+            });
+        });
+    });
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorAlert.classList.add('d-none');
+
+        const language = document.querySelector('input[name="language"]:checked').value;
+        const category = document.querySelector('input[name="category"]:checked').value;
+        const difficulty = document.querySelector('input[name="difficulty"]:checked').value;
+        const timeLimit = parseInt(document.getElementById('time-limit-select').value, 10);
+
+        startBtn.disabled = true;
+        spinner.classList.remove('d-none');
+        btnText.textContent = "Setting up workspace...";
+
+        try {
+            const headers = { 'Content-Type': 'application/json' };
+            const access = Auth.getAccessToken();
+            if (access) headers['Authorization'] = `Bearer ${access}`;
+
+            const res = await fetch('/api/assessments/coding/start/', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({
+                    language: language,
+                    category: category,
+                    difficulty: difficulty,
+                    time_limit_seconds: timeLimit
+                })
+            });
+
+            const data = await res.json();
+            if (res.status === 201) {
+                if (data.session_id) {
+                    localStorage.setItem('skillbyte_guest_session_id', data.session_id);
+                }
+                window.location.href = `/coding/assessment/${data.attempt_id}/`;
+            } else {
+                errorAlert.textContent = data.error || "Failed to start coding assessment.";
+                errorAlert.classList.remove('d-none');
+            }
+        } catch (err) {
+            errorAlert.textContent = "Network error: Unable to connect to assessment service.";
+            errorAlert.classList.remove('d-none');
+        } finally {
+            startBtn.disabled = false;
+            spinner.classList.add('d-none');
+            btnText.textContent = "Launch Coding Workspace →";
+        }
+    });
+});
+</script>
+{% endblock %}
+

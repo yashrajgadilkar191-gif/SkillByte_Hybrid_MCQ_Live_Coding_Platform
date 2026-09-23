@@ -1,0 +1,81 @@
+/* ==========================================================================
+   SKILLBYTE — Master Theme Stylesheet (Phase 1 Foundation)
+   ========================================================================== */
+
+:root {
+    --sb-bg-dark: #0b0f19;
+    --sb-bg-surface: #111827;
+    --sb-bg-darker: #070a12;
+    --sb-bg-card: rgba(17, 24, 39, 0.85);
+    --sb-primary: #3b82f6;
+    --sb-primary-hover: #2563eb;
+    --sb-accent: #8b5cf6;
+    --sb-success: #10b981;
+    --sb-warning: #f59e0b;
+    --sb-danger: #ef4444;
+    --sb-text-main: #f3f4f6;
+    --sb-text-muted: #9ca3af;
+    --sb-border: rgba(255, 255, 255, 0.08);
+    --sb-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --sb-font-mono: 'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+body.skillbyte-body {
+    background-color: var(--sb-bg-dark);
+    color: var(--sb-text-main);
+    font-family: var(--sb-font-sans);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.bg-dark-navy {
+    background-color: var(--sb-bg-surface) !important;
+}
+
+.bg-glass {
+    background-color: var(--sb-bg-card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--sb-border);
+}
+
+.bg-surface {
+    background-color: var(--sb-bg-surface) !important;
+}
+
+.bg-darker {
+    background-color: var(--sb-bg-darker) !important;
+}
+
+.text-secondary {
+    color: var(--sb-text-muted) !important;
+}
+
+.font-monospace {
+    font-family: var(--sb-font-mono) !important;
+}
+
+/* Card Enhancements */
+.card {
+    border-radius: 12px;
+}
+
+/* API Badge */
+#api-status-badge {
+    font-size: 0.8rem;
+    padding: 0.35rem 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.badge-connected {
+    background-color: #065f46 !important;
+    color: #34d399 !important;
+    border: 1px solid #10b981;
+}
+
+.badge-error {
+    background-color: #7f1d1d !important;
+    color: #f87171 !important;
+    border: 1px solid #ef4444;
+}
+

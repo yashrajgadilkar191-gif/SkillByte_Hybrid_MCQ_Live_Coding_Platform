@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+
+{% block title %}Assessment Result — SKILLBYTE{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <!-- Results Summary Card -->
+        <div class="card shadow-lg border-0 bg-glass text-light mb-4">
+            <div class="card-body p-4 p-md-5">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+                    <div>
+                        <span class="badge bg-success-subtle text-success border border-success px-3 py-1 mb-2">Evaluation Complete</span>
+                        <h2 class="fw-bold mb-1">Assessment Performance Report</h2>
+                        <p class="text-secondary small mb-0" id="result-subject-label">Subject & Difficulty</p>
+                    </div>
+                    <div class="text-end">
+                        <span id="result-status-badge" class="badge bg-success fs-6 px-3 py-2">COMPLETED</span>
+                    </div>
+                </div>
+
+                <!-- Big Scorecard Metrics -->
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-md-3">
+                        <div class="p-3 bg-surface rounded border border-secondary border-opacity-25 text-center">
+                            <span class="text-secondary small d-block mb-1">Score Obtained</span>
+                            <h3 class="fw-bold text-light mb-0" id="res-obtained-marks">-- / --</h3>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-3 bg-surface rounded border border-secondary border-opacity-25 text-center">
+                            <span class="text-secondary small d-block mb-1">Accuracy / Percentage</span>
+                            <h3 class="fw-bold text-primary mb-0" id="res-percentage">--%</h3>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-3 bg-surface rounded border border-secondary border-opacity-25 text-center">
+                            <span class="text-secondary small d-block mb-1">Correct Answers</span>
+                            <h3 class="fw-bold text-success mb-0" id="res-correct-count">--</h3>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-3 bg-surface rounded border border-secondary border-opacity-25 text-center">
+                            <span class="text-secondary small d-block mb-1">Wrong Answers</span>
+                            <h3 class="fw-bold text-danger mb-0" id="res-wrong-count">--</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Performance Meta -->
+                <div class="p-3 bg-darker rounded border border-secondary border-opacity-25 d-flex align-items-center justify-content-between flex-wrap gap-2 text-secondary small mb-4">
+                    <span>Unanswered Questions: <strong class="text-light" id="res-unanswered-count">0</strong></span>
+                    <span>Total Questions: <strong class="text-light" id="res-total-count">0</strong></span>
+                    <span>Time Taken: <strong class="text-light" id="res-time-taken">--</strong></span>
+                </div>
+
+                <!-- Action CTAs -->
+                <div class="d-flex align-items-center flex-wrap gap-2 mb-5">
+                    <a href="/assessments/mcq/" class="btn btn-primary btn-sm px-3">Practice Another Subject</a>
+                    <a href="/dashboard/" class="btn btn-outline-light btn-sm px-3">Go to Dashboard</a>
+                    <button class="btn btn-outline-info btn-sm px-3" onclick="window.print()">Print Result</button>
+                </div>
+
+                <hr class="border-secondary opacity-25 my-4">
+
+                <!-- Detailed Question Review Section -->
+                <div>
+                    <h5 class="fw-bold text-light mb-3">Question-by-Question Review & Explanations</h5>
+                    <div id="review-container" class="d-flex flex-column gap-3">
+                        <div class="text-secondary small">Loading question review...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const ATTEMPT_ID = {{ attempt_id }};
+
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const headers = {};
+        const access = Auth.getAccessToken();
+        if (access) headers['Authorization'] = `Bearer ${access}`;
+        const guestSession = localStorage.getItem('skillbyte_guest_session_id');
+
+        let url = `/api/assessments/mcq/${ATTEMPT_ID}/result/`;
+        if (guestSession) url += `?session_id=${encodeURIComponent(guestSession)}`;
+
+        const res = await fetch(url, { headers });
+        const data = await res.json();
+
+        if (res.ok) {
+            renderResultUI(data);
+        } else {
+            alert(data.error || "Unable to load results.");
+        }
+    } catch (err) {
+        console.error("Result fetch error:", err);
+    }
+});
+
+function renderResultUI(data) {
+    document.getElementById('result-subject-label').textContent = `${data.category} • ${data.difficulty} Difficulty`;
+    document.getElementById('res-obtained-marks').textContent = `${data.obtained_marks} / ${data.total_marks}`;
+    document.getElementById('res-percentage').textContent = `${data.percentage}%`;
+    document.getElementById('res-correct-count').textContent = data.correct_answers;
+    document.getElementById('res-wrong-count').textContent = data.wrong_answers;
+    document.getElementById('res-unanswered-count').textContent = data.unanswered;
+    document.getElementById('res-total-count').textContent = (data.correct_answers + data.wrong_answers + data.unanswered);
+
+    if (data.time_taken_seconds !== null && data.time_taken_seconds !== undefined) {
+        const mins = Math.floor(data.time_taken_seconds / 60);
+        const secs = data.time_taken_seconds % 60;
+        document.getElementById('res-time-taken').textContent = `${mins}m ${secs}s`;
+    }
+
+    // Render review items
+    const container = document.getElementById('review-container');
+    container.innerHTML = '';
+
+    if (!data.review || data.review.length === 0) {
+        container.innerHTML = `<div class="text-secondary small">No question details available.</div>`;
+        return;
+    }
+
+    data.review.forEach((item, index) => {
+        const card = document.createElement('div');
+        const isCorrect = item.is_correct;
+        const isAnswered = item.selected_option_key !== null && item.selected_option_key !== undefined;
+
+        let badgeClass = "badge bg-danger";
+        let statusText = "Incorrect (0 Marks)";
+
+        if (isCorrect) {
+            badgeClass = "badge bg-success";
+            statusText = `Correct (+${item.marks_obtained} Marks)`;
+        } else if (!isAnswered) {
+            badgeClass = "badge bg-secondary";
+            statusText = "Unanswered (0 Marks)";
+        }
+
+        card.className = "card bg-surface border border-secondary border-opacity-25 p-3 text-light";
+        card.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-secondary small">Question ${index + 1}</span>
+                <span class="${badgeClass}">${statusText}</span>
+            </div>
+            <h6 class="fw-semibold text-light mb-3">${escapeHtml(item.title)} — ${escapeHtml(item.description || '')}</h6>
+            <div class="p-2 bg-darker rounded border border-secondary border-opacity-25 small mb-2">
+                <div class="mb-1">
+                    <span class="text-secondary">Your Selection:</span>
+                    <strong class="${isCorrect ? 'text-success' : (isAnswered ? 'text-danger' : 'text-muted')}">
+                        ${item.selected_option_key ? `[Option ${item.selected_option_key}] ${escapeHtml(item.selected_option_text || '')}` : 'Not Answered'}
+                    </strong>
+                </div>
+                <div>
+                    <span class="text-secondary">Correct Answer:</span>
+                    <strong class="text-success">
+                        [Option ${item.correct_option_key}] ${escapeHtml(item.correct_option_text || '')}
+                    </strong>
+                </div>
+            </div>
+            <div class="text-secondary small bg-darker p-2 rounded border border-secondary border-opacity-25">
+                <strong class="text-info">Explanation:</strong> ${escapeHtml(item.explanation)}
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+</script>
+{% endblock %}
+

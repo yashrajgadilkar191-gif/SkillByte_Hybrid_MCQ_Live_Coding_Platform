@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+
+{% block title %}Register — SKILLBYTE{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-lg border-0 bg-glass text-light">
+            <div class="card-body p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <span class="badge bg-success-subtle text-success border border-success px-3 py-1 mb-2">Student Registration</span>
+                    <h2 class="fw-bold mb-1">Create Account</h2>
+                    <p class="text-secondary small">Join SkillByte to track attempts and rank on the leaderboard</p>
+                </div>
+
+                <!-- Error Alert -->
+                <div id="reg-error-alert" class="alert alert-danger d-none small py-2 px-3 mb-3" role="alert"></div>
+
+                <!-- Success Alert -->
+                <div id="reg-success-alert" class="alert alert-success d-none small py-2 px-3 mb-3" role="alert"></div>
+
+                <form id="register-form" novalidate>
+                    <div class="mb-3">
+                        <label for="reg-name" class="form-label small text-secondary">Full Name</label>
+                        <input type="text" class="form-control bg-darker text-light border-secondary border-opacity-50" id="reg-name" placeholder="John Doe" required autocomplete="name">
+                        <div class="invalid-feedback small">Full name is required.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="reg-email" class="form-label small text-secondary">Email Address</label>
+                        <input type="email" class="form-control bg-darker text-light border-secondary border-opacity-50" id="reg-email" placeholder="student@example.com" required autocomplete="email">
+                        <div class="invalid-feedback small">Please provide a valid email address.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="reg-password" class="form-label small text-secondary">Password <span class="text-muted">(Min 8 characters)</span></label>
+                        <input type="password" class="form-control bg-darker text-light border-secondary border-opacity-50" id="reg-password" placeholder="••••••••" required minlength="8" autocomplete="new-password">
+                        <div class="invalid-feedback small">Password must be at least 8 characters long.</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="reg-confirm-password" class="form-label small text-secondary">Confirm Password</label>
+                        <input type="password" class="form-control bg-darker text-light border-secondary border-opacity-50" id="reg-confirm-password" placeholder="••••••••" required autocomplete="new-password">
+                        <div class="invalid-feedback small">Passwords must match.</div>
+                    </div>
+
+                    <button type="submit" id="reg-submit-btn" class="btn btn-primary w-100 py-2 fw-semibold d-flex align-items-center justify-content-center gap-2">
+                        <span id="reg-spinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        <span id="reg-btn-text">Create Student Account</span>
+                    </button>
+                </form>
+
+                <hr class="border-secondary opacity-25 my-4">
+
+                <div class="text-center small text-secondary">
+                    Already registered? <a href="/login/" class="text-primary text-decoration-none fw-medium">Sign In</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('register-form');
+    const nameInput = document.getElementById('reg-name');
+    const emailInput = document.getElementById('reg-email');
+    const passwordInput = document.getElementById('reg-password');
+    const confirmInput = document.getElementById('reg-confirm-password');
+    const errorAlert = document.getElementById('reg-error-alert');
+    const successAlert = document.getElementById('reg-success-alert');
+    const submitBtn = document.getElementById('reg-submit-btn');
+    const spinner = document.getElementById('reg-spinner');
+    const btnText = document.getElementById('reg-btn-text');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorAlert.classList.add('d-none');
+        successAlert.classList.add('d-none');
+
+        const name = nameInput.value.trim();
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        const confirm_password = confirmInput.value;
+
+        // Client-side validations
+        let valid = true;
+
+        if (!name) {
+            nameInput.classList.add('is-invalid');
+            valid = false;
+        } else {
+            nameInput.classList.remove('is-invalid');
+        }
+
+        if (!email || !email.includes('@')) {
+            emailInput.classList.add('is-invalid');
+            valid = false;
+        } else {
+            emailInput.classList.remove('is-invalid');
+        }
+
+        if (password.length < 8) {
+            passwordInput.classList.add('is-invalid');
+            valid = false;
+        } else {
+            passwordInput.classList.remove('is-invalid');
+        }
+
+        if (password !== confirm_password) {
+            confirmInput.classList.add('is-invalid');
+            valid = false;
+        } else {
+            confirmInput.classList.remove('is-invalid');
+        }
+
+        if (!valid) return;
+
+        // Show loading state
+        submitBtn.disabled = true;
+        spinner.classList.remove('d-none');
+        btnText.textContent = "Creating Account...";
+
+        try {
+            const res = await fetch('/api/auth/register/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, password, confirm_password })
+            });
+
+            const data = await res.json();
+
+            if (res.status === 201) {
+                successAlert.textContent = "Account created successfully! Logging you in...";
+                successAlert.classList.remove('d-none');
+
+                // Auto-login after successful registration
+                const loginRes = await fetch('/api/auth/login/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                if (loginRes.ok) {
+                    const loginData = await loginRes.json();
+                    Auth.setSession({ access: loginData.access, refresh: loginData.refresh }, loginData.user);
+                    setTimeout(() => {
+                        window.location.href = '/dashboard/';
+                    }, 800);
+                } else {
+                    setTimeout(() => {
+                        window.location.href = '/login/';
+                    }, 1200);
+                }
+            } else {
+                let msg = "Registration failed.";
+                if (data.email) {
+                    msg = Array.isArray(data.email) ? data.email.join(' ') : data.email;
+                } else if (data.password) {
+                    msg = Array.isArray(data.password) ? data.password.join(' ') : data.password;
+                } else if (data.confirm_password) {
+                    msg = Array.isArray(data.confirm_password) ? data.confirm_password.join(' ') : data.confirm_password;
+                } else if (typeof data === 'object') {
+                    msg = Object.values(data).flat().join(' ');
+                }
+                errorAlert.textContent = msg;
+                errorAlert.classList.remove('d-none');
+            }
+        } catch (err) {
+            errorAlert.textContent = "Network error occurred. Please check server connectivity.";
+            errorAlert.classList.remove('d-none');
+        } finally {
+            submitBtn.disabled = false;
+            spinner.classList.add('d-none');
+            btnText.textContent = "Create Student Account";
+        }
+    });
+});
+</script>
+{% endblock %}
+

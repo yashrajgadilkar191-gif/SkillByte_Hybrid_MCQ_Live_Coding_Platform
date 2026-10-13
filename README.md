@@ -1,348 +1,340 @@
+
 # SKILLBYTE — "Where Theory Meets Practice"
 
-SKILLBYTE is a college Mini Project designed as a comprehensive hybrid assessment platform that unifies:
-1. **MCQ-Based Theoretical Assessment** (General Knowledge, English, Mathematics)
-2. **Live Coding Assessment** (Python, Java, C++, DSA via Monaco Editor & Judge0)
+[![Release: v1.0.0-final-release](https://img.shields.io/badge/Release-v1.0.0--final--release-blue.svg)](https://github.com/your-org/skillbyte)
+[![Python: 3.10+](https://img.shields.io/badge/Python-3.10%2B-brightgreen.svg)](https://www.python.org/)
+[![Django: 4.2+ LTS](https://img.shields.io/badge/Django-4.2%2B%20LTS-darkgreen.svg)](https://www.djangoproject.com/)
+[![PostgreSQL: 15+](https://img.shields.io/badge/PostgreSQL-15%2B%20Exclusive-blue.svg)](https://www.postgresql.org/)
+[![Judge0: Sandboxed](https://img.shields.io/badge/Code%20Execution-Judge0%20Docker-orange.svg)](https://judge0.com/)
+[![Tests: 68/68 PASS](https://img.shields.io/badge/Tests-68%2F68%20PASS%20(100%25)-success.svg)](file:///docs/TESTING_REPORT.md)
+[![CDP: 10/10 PASS](https://img.shields.io/badge/Chrome%20CDP-10%2F10%20(0%20Errors)-success.svg)](file:///docs/TESTING_REPORT.md)
+[![SRS Compliance: 42/42](https://img.shields.io/badge/SRS%20Compliance-42%2F42%20(100%25)-success.svg)](file:///docs/FINAL_PROJECT_REPORT.md)
+
+**SKILLBYTE** is a production-grade, hybrid technical skill assessment platform engineered for university examinations, campus recruitments, and corporate technical evaluations. It unifies:
+1. **Theoretical MCQ Assessments** (General Knowledge, English, Mathematics) with server-authoritative timer validation and instant solution breakdowns.
+2. **Live In-Browser Coding Assessments** (Python, Java, C++, DSA) powered by Microsoft’s Monaco Editor (the editor core of VS Code) and an isolated, containerized Judge0 execution engine.
+3. **Unified Gamification & Anti-Farming Deduplication**: A **Best Score per Unique Question** mathematical scoring model that prevents point farming and dynamically assigns students into skill tiers (*Novice*, *Apprentice*, *Specialist*, *Master*).
+4. **Administrative Governance & Analytics**: Full Question Bank CRUD, hidden test case management, macro-level KPI dashboards, and one-click server-side CSV data streaming.
 
 ---
 
-## 1. Project Purpose
+## Academic Project Information
 
-SkillByte bridges the gap between theoretical knowledge and practical coding ability. Students and candidates practice multiple-choice assessments and real-time coding problems from a single, unified interface, with unified progress tracking, leaderboard rankings, and performance analytics.
-
----
-
-## 2. Technology Stack
-
-- **Backend Framework**: Python 3.14, Django 5.2, Django REST Framework (DRF)
-- **Database**: PostgreSQL (exclusively using Django ORM; no SQLite fallback)
-- **Authentication**: JWT (`djangorestframework-simplejwt` with Token Blacklisting) + Django Auth
-- **Frontend**: HTML5, CSS3, JavaScript (Vanilla ES6+), Bootstrap 5.3, Monaco Editor (CDN)
-- **Code Execution**: Judge0 API (official remote execution engine)
-- **Architecture**: Modular Django monolithic architecture serving REST APIs and responsive UI
+- **Institution**: `[COLLEGE_NAME]`, Department of `[DEPARTMENT_NAME]`
+- **Project Team**: `[STUDENT_NAME_1]` (`[ROLL_NUMBER_1]`), `[STUDENT_NAME_2]` (`[ROLL_NUMBER_2]`)
+- **Faculty Guide**: `[PROJECT_GUIDE_NAME]`, `[DESIGNATION_OF_GUIDE]`
+- **Academic Year**: `[ACADEMIC_YEAR]`
+- **Final Release Tag**: `v1.0.0-final-release` (Anchored at Commit `9e66eef`)
 
 ---
 
-## 3. Project Structure
+## 1. Documentation Index (`docs/`)
+
+All formal academic, architectural, and operational specifications are available in the [`docs/`](docs/) directory:
+
+| Document ID | File Path | Focus Area & Description |
+|:---:|---|---|
+| **DELIV-01** | [`docs/SYSTEM_ARCHITECTURE.md`](docs/SYSTEM_ARCHITECTURE.md) | Multi-tier architecture blueprint, Mermaid component & sequence diagrams. |
+| **DELIV-02** | [`docs/DATABASE_ER_DIAGRAM.md`](docs/DATABASE_ER_DIAGRAM.md) | Complete Entity-Relationship diagram across all 9 models & data dictionary. |
+| **DELIV-03** | [`docs/API_DOCUMENTATION.md`](docs/API_DOCUMENTATION.md) | Exhaustive REST API specification covering all 28 endpoints and schemas. |
+| **DELIV-04** | [`docs/TESTING_REPORT.md`](docs/TESTING_REPORT.md) | Quality assurance report: 68 automated tests, 10 CDP browser scenarios, 0 errors. |
+| **DELIV-05** | [`docs/SECURITY_DOCUMENTATION.md`](docs/SECURITY_DOCUMENTATION.md) | Security architecture, PBKDF2 hashing, JWT blacklisting, RBAC, Judge0 cgroups, STRIDE. |
+| **DELIV-06** | [`docs/DEPLOYMENT_GUIDE.md`](docs/DEPLOYMENT_GUIDE.md) | Production Linux operations manual (Gunicorn, Nginx, PostgreSQL, SSL Certbot, Docker). |
+| **DELIV-07** | [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md) | Synchronized, timed 12-minute presenter script and contingency runbook. |
+| **DELIV-08** | [`docs/VIVA_PREPARATION_GUIDE.md`](docs/VIVA_PREPARATION_GUIDE.md) | Oral defense manual featuring 25 technical examiner questions with model answers. |
+| **DELIV-09** | [`docs/FINAL_PROJECT_REPORT.md`](docs/FINAL_PROJECT_REPORT.md) | Comprehensive 32-chapter academic capstone project report. |
+| **DELIV-10** | [`docs/FINAL_PRESENTATION_SLIDES.md`](docs/FINAL_PRESENTATION_SLIDES.md) | 16-slide academic presentation specification with visual layouts and speaker notes. |
+
+---
+
+## 2. Key Features Across All 11 Engineering Phases
+
+### 2.1 Core Authentication & Role Management (Phases 1–2, 11)
+- **PBKDF2 Password Hashing**: Hashed using 600,000 SHA-256 iterations with unique cryptographic salt per user.
+- **Stateless JWT Authentication**: Access tokens (60 min) and rotated Refresh tokens (7 days) via SimpleJWT.
+- **Token Blacklisting**: Logout and token refresh immediately blacklist previous refresh tokens in PostgreSQL, thwarting replay attacks.
+- **Three-Tier RBAC**: Granular permissions distinguishing `ADMIN`, `STUDENT`, and `GUEST`.
+- **Student Profile Management**: Real-time profile editing (`PATCH /api/auth/me/`) and secure password change workflows.
+
+### 2.2 Question Bank & Theoretical MCQ Engine (Phases 3–4, 9)
+- **Unified Relational Schema**: Single model structure supporting both MCQ theoretical questions and practical coding challenges.
+- **Categorization**: Theoretical subjects (General Knowledge, English, Mathematics) and Coding domains (Python, Java, C++, DSA).
+- **Server-Authoritative Timer**: Timestamps recorded upon initiation (`started_at`); submissions strictly validated upon completion.
+- **Zero-Leakage Data Sanitization**: Correct answer flags (`is_correct`) are stripped server-side from student serializers during active exams.
+- **Instant Result Analytics**: Immediate post-exam scoring with question-by-question review cards and detailed explanations.
+
+### 2.3 Live Monaco Coding Environment (Phases 5–7, 10, 11)
+- **In-Browser Desktop IDE**: Microsoft Monaco Editor (v0.34+) loaded asynchronously with dark/light themes, syntax highlighting, and minimap.
+- **Multi-Language Support**: Pre-loaded starter code templates for Python 3, Java (OpenJDK), and C++ (GCC).
+- **"Run Code" Diagnostics**: Instant candidate testing against public sample test cases with real-time stdout/stderr console feedback.
+- **"Submit Solution" Grading**: Comprehensive grading against hidden test cases (`is_hidden=True`) evaluated in Judge0.
+- **Failure Classification**: Automatic tagging of `ACCEPTED`, `PARTIAL`, `WRONG_ANSWER`, `TIME_LIMIT_EXCEEDED` (TLE), `RUNTIME_ERROR` (RTE), and `COMPILATION_ERROR` (CE).
+- **Candidate Utility Tools**: One-click **Copy Solution** (with UI toast), native source file **Download** (`.py`, `.java`, `.cpp`), and **Practice Again** session resets.
+
+### 2.4 Containerized Code Execution via Judge0 (Phases 6–7)
+- **Self-Hosted Sandboxing**: Runs as an isolated microservice on port `2358` via Docker Compose.
+- **Linux Control Groups (cgroups)**: Enforces hard resource ceilings (2.0s CPU time limit, 256 MB RAM ceiling, 64 PID ceiling).
+- **Unprivileged Execution**: Code executes as user `nobody` (UID 65534) with read-only root filesystems.
+- **Zero Egress Networking**: Container sockets are launched with `--net none`, completely blocking outbound network connections, DDoS attempts, and SSRF attacks.
+
+### 2.5 Unified Scoring, Gamification & Leaderboard (Phase 10)
+- **Best Score per Unique Question**: Deduplication algorithm prevents score farming. Cumulative points reflect breadth of knowledge rather than repetitive attempts on easy challenges.
+- **Dynamic Skill Tiers**: Real-time progression across **Novice** (0–49 pts), **Apprentice** (50–149 pts), **Specialist** (150–299 pts), and **Master** (300+ pts).
+- **Two-Dimensional Mastery Tracking**: Student dashboards display Theory Points and Practical Points independently.
+- **Dynamic Leaderboards**: Filter rankings by subject and timeframe (All-Time, Monthly, Weekly) without corrupting historical records.
+
+### 2.6 Resilience, Admin Governance & Institutional Export (Phases 9, 11)
+- **Assessment Resumption**: Active session endpoint (`GET /api/assessments/active/`) detects incomplete attempts and seamlessly restores editor state, code, and remaining time across browser refreshes.
+- **Explicit Abandonment**: Candidates can terminate sessions early (`POST /api/assessments/<id>/abandon/`), transitioning status to `ABANDONED` with 0 marks.
+- **Full Admin Question Bank CRUD**: Complete administrative interface for authoring questions, options, starter code, and test cases.
+- **Macro-Level KPI Analytics**: Real-time dashboard showing candidate counts, completion rates (88.9%), and subject distribution charts.
+- **Institutional CSV Streaming**: One-click server-side CSV export (`GET /api/admin/analytics/export/?format=csv`).
+- **Production Polish**: Custom branded 404, 403, and 500 error pages; DRF scoped rate limiters (15/min auth, 30/min code run, 120/min anon).
+
+---
+
+## 3. Technology Stack
+
+- **Backend Kernel**: Python 3.10+, Django 4.2+ LTS, Django REST Framework (DRF) 3.14+
+- **Authentication**: `djangorestframework-simplejwt` with Token Blacklisting
+- **Persistence Tier**: PostgreSQL 15+ (Exclusively via Django ORM; strictly no SQLite fallback per SRS)
+- **Code Execution Sandbox**: Self-hosted Judge0 API v1.13 running inside Docker containers with Linux cgroups
+- **In-Browser IDE**: Microsoft Monaco Editor v0.34+ (loaded asynchronously via AMD require)
+- **Frontend Presentation**: HTML5, CSS3, JavaScript (Vanilla ES6+), Bootstrap 5.3, Bootstrap Icons
+- **HTTP / WSGI Runtime**: Gunicorn WSGI Server & Nginx Reverse Proxy (Production) / Django Runserver (Development)
+
+---
+
+## 4. Multi-Tier Architecture
 
 ```
-MiniProject/
-├── .env.example              # Environment variables template
-├── .env                      # Local environment configuration (git-ignored)
-├── .gitignore                # Git exclusions
-├── requirements.txt          # Python dependencies
-├── manage.py                 # Root management convenience wrapper
-├── README.md                 # Project documentation
-│
-├── backend/                  # Django project root
-│   ├── manage.py             # Django management CLI
-│   ├── config/               # Project configuration package
-│   │   ├── __init__.py
-│   │   ├── settings.py       # PostgreSQL-only settings, DRF, CORS, SimpleJWT
-│   │   ├── urls.py           # Core routing (admin, api/auth, api, frontend pages)
-│   │   ├── wsgi.py           # WSGI entrypoint
-│   │   └── asgi.py           # ASGI entrypoint
-│   ├── accounts/             # Authentication & User Role Management (Phase 2)
-│   │   ├── __init__.py
-│   │   ├── admin.py          # Django Admin User & Profile integration
-│   │   ├── apps.py           # AppConfig & signals registration
-│   │   ├── backends.py       # Case-insensitive email authentication backend
-│   │   ├── models.py         # UserProfile (OneToOne with User, Role choices)
-│   │   ├── permissions.py    # Reusable RBAC permissions (IsStudent, IsAdmin)
-│   │   ├── serializers.py    # Register, Login, User, Logout serializers
-│   │   ├── signals.py        # Automatic UserProfile creation signal
-│   │   ├── tests.py          # 14 automated unit tests for auth & RBAC
-│   │   ├── urls.py           # /api/auth/ endpoints
-│   │   ├── views.py          # Register, Login, Me, Logout, Role tests
-│   │   └── management/
-│   │       └── commands/
-│   │           ├── setup_admin.py    # Secure admin creation CLI
-│   │           └── promote_admin.py  # User promotion CLI
-│   └── api/                  # Core API app
-│       ├── __init__.py
-│       ├── apps.py
-│       ├── tests.py          # Health check and frontend view tests
-│       ├── urls.py           # /api/health/ routing
-│       └── views.py          # health_check & frontend page views
-│
-└── frontend/                 # Frontend assets & templates
-    ├── templates/
-    │   ├── base.html         # Base HTML5 layout with Bootstrap 5 & navbar
-    │   ├── index.html        # Landing page with dynamic status & CTAs
-    │   ├── login.html        # Student/Admin login page
-    │   ├── register.html     # Student registration page (strictly no admin role)
-    │   └── dashboard.html    # Dashboard foundation with role inspection
-    └── static/
-        ├── css/
-        │   └── main.css      # Core theme styles, variables, card styles
-        └── js/
-            ├── main.js       # Asynchronous API health status checker
-            └── auth.js       # Client JWT session manager & auth state
+[ Browser / Client ] ──(HTTP/1.1 REST + JWT Bearer)──> [ Django Monolith (:8000) ]
+  • Monaco Code Editor                                   • SimpleJWT Auth & Blacklist
+  • Bootstrap 5.3 Responsive Views                       • RBAC & Rate Throttling
+  • Async ES6 Fetch Controllers                          • Deduplicated Scoring
+                                                           │              │
+                                                Postgres   │              │ HTTP REST
+                                                (:5432)    ▼              ▼ (:2358)
+                                          [ PostgreSQL 15 DB ]   [ Judge0 Sandbox ]
+                                          • ACID Transactions    • Docker Worker Containers
+                                          • Relational Schema    • Linux cgroups limits
+                                          • JSONB Starter Code   • Severed Network (--net none)
 ```
 
 ---
 
-## 4. Prerequisites
+## 5. REST API Endpoint Reference (28 Endpoints)
 
-1. **Python 3.10+** (Python 3.14 verified)
-2. **PostgreSQL 14+** (PostgreSQL 18 service running on `localhost:5432`)
-3. **pip** (Python package manager)
+| Method | Endpoint Route | RBAC Access | Module & Description |
+|:---:|---|:---:|---|
+| `POST` | `/api/auth/register/` | Public | Register new student account (default `STUDENT` role) |
+| `POST` | `/api/auth/login/` | Public | Authenticate via email/username; obtain JWT tokens |
+| `POST` | `/api/auth/token/refresh/` | Public | Refresh expired access token with token rotation |
+| `POST` | `/api/auth/logout/` | Authenticated | Blacklist refresh token & terminate session |
+| `GET/PUT/PATCH`| `/api/auth/me/` | Authenticated | Retrieve or update user profile and bio |
+| `POST` | `/api/auth/change-password/` | Authenticated | Change user account password securely |
+| `GET` | `/api/auth/test-student-role/` | Student Only | Verify student RBAC access control |
+| `GET` | `/api/auth/test-admin-role/` | Admin Only | Verify administrator RBAC access control |
+| `GET` | `/api/questions/` | Public / Student | List active questions with subject & difficulty filters |
+| `GET` | `/api/questions/<id>/` | Public / Student | Retrieve sanitized question details |
+| `GET` | `/api/assessments/active/` | Student / Guest | Detect active in-progress assessment attempt |
+| `POST` | `/api/assessments/<id>/abandon/` | Attempt Owner | Terminate an in-progress assessment session |
+| `POST` | `/api/assessments/mcq/start/` | Student / Guest | Initiate a new theoretical MCQ assessment session |
+| `POST` | `/api/assessments/mcq/<id>/answer/` | Attempt Owner | Record option selection for an MCQ question |
+| `POST` | `/api/assessments/mcq/<id>/submit/` | Attempt Owner | Finalize MCQ assessment and compute official score |
+| `GET` | `/api/assessments/mcq/<id>/result/` | Attempt Owner | View score summary and review with explanations |
+| `POST` | `/api/assessments/coding/start/` | Student / Guest | Initiate a live coding assessment session |
+| `GET` | `/api/assessments/coding/<id>/` | Attempt Owner | Fetch coding problem details and starter code |
+| `POST` | `/api/assessments/coding/<id>/run/` | Attempt Owner | Run code against public sample test cases |
+| `POST` | `/api/assessments/coding/<id>/submit/` | Attempt Owner | Submit code for hidden test case evaluation in Judge0 |
+| `GET` | `/api/assessments/coding/<id>/result/` | Attempt Owner | View code submission telemetry & failure tags |
+| `GET` | `/api/assessments/my-attempts/` | Authenticated | Retrieve historical assessment session records |
+| `GET` | `/api/assessments/progress/` | Authenticated | Compute unified mastery score & skill tier |
+| `GET` | `/api/leaderboard/` | Public / Student | Dynamic leaderboard with category & timeframe filters |
+| `GET` | `/api/questions/admin/` | Admin Only | Full CRUD list of question bank |
+| `POST` | `/api/questions/admin/mcq/` | Admin Only | Create MCQ question with answer options |
+| `POST` | `/api/questions/admin/code/` | Admin Only | Create coding problem with test cases |
+| `GET` | `/api/admin/analytics/export/?format=csv`| Admin Only | Stream institutional performance analytics as CSV |
+| `GET` | `/api/health/` | Public | System and database operational health check |
+
+*For complete request/response schemas and payload examples, refer to [`docs/API_DOCUMENTATION.md`](docs/API_DOCUMENTATION.md).*
 
 ---
 
-## 5. PostgreSQL Setup & Configuration
+## 6. Prerequisites & Installation Guide
 
-SkillByte is strictly configured to use PostgreSQL. No SQLite fallback is permitted.
+### 6.1 Prerequisites
+1. **Python 3.10+** (Python 3.10–3.14 verified)
+2. **PostgreSQL 14+** (Service active on `localhost:5432`)
+3. **Docker Engine & Docker Compose** (Required for Judge0 code execution)
+4. **Git**
 
-### Step 1: Create Database
-Open your PostgreSQL terminal (`psql`) or pgAdmin and run:
+---
+
+### 6.2 Step-by-Step Setup
+
+#### Step 1: Clone Repository & Create Virtual Environment
+```bash
+git clone https://github.com/your-org/skillbyte.git
+cd skillbyte
+
+# Create and activate Python virtual environment
+python -m venv venv
+
+# Windows (PowerShell):
+.\venv\Scripts\Activate.ps1
+
+# Linux / macOS:
+source venv/bin/activate
+```
+
+#### Step 2: Install Python Dependencies
+```bash
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+#### Step 3: Configure PostgreSQL Database
+Open your PostgreSQL shell (`psql`) or pgAdmin and run:
 ```sql
 CREATE DATABASE skillbyte_db;
 ```
 
-### Step 2: Configure Environment Variables
-Copy `.env.example` to `.env` (if not already present):
-```bash
-cp .env.example .env
-```
-
-Open `.env` and fill in your PostgreSQL credentials:
-```env
-# Django Settings
-SECRET_KEY=your_secure_random_key_here
+Create a `.env` file in the project root:
+```ini
+# Core Django Configuration
+SECRET_KEY=skillbyte-insecure-development-secret-key-replace-in-production
 DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1,[::1],testserver
 
-# PostgreSQL Database Configuration (Required)
+# PostgreSQL Database Configuration (Strictly Required)
 DB_NAME=skillbyte_db
 DB_USER=postgres
-DB_PASSWORD=your_actual_postgres_password
+DB_PASSWORD=your_postgres_password_here
 DB_HOST=localhost
 DB_PORT=5432
 
-# SimpleJWT Configuration (Optional overrides)
+# Judge0 Sandboxed Execution Microservice
+JUDGE0_URL=http://localhost:2358
+
+# JWT Parameters
 JWT_ACCESS_MINUTES=60
 JWT_REFRESH_DAYS=7
 ```
 
----
-
-## 6. Installation & Execution Commands
-
-### Step 1: Install Dependencies
+#### Step 4: Apply Database Migrations & Seed Question Bank
 ```bash
-pip install -r requirements.txt
-```
+cd backend
 
-### Step 2: Check Django Configuration
-```bash
+# Validate configuration
 python manage.py check
-```
 
-### Step 3: Run Database Migrations
-```bash
-python manage.py makemigrations
+# Apply PostgreSQL database migrations
 python manage.py migrate
-```
 
-### Step 4: Seed Question Bank (Phase 3)
-```bash
+# Seed initial question bank with MCQs and Coding problems
 python manage.py seed_questions
 ```
 
-### Step 5: Run Automated Tests
+#### Step 5: Start Self-Hosted Judge0 Docker Stack
 ```bash
-python manage.py test accounts questions api
+# In a separate terminal or Docker host
+mkdir -p /opt/judge0 && cd /opt/judge0
+curl -fsSL https://raw.githubusercontent.com/judge0/judge0/master/docker-compose.yml -o docker-compose.yml
+curl -fsSL https://raw.githubusercontent.com/judge0/judge0/master/judge0.conf -o judge0.conf
+docker compose up -d
+
+# Verify health status
+curl http://localhost:2358/system_info
 ```
 
-### Step 6: Start Development Server
+#### Step 6: Create Administrative Accounts
 ```bash
-python manage.py runserver
-```
-The application will be accessible at `http://127.0.0.1:8000/`.
-
----
-
-## 7. Authentication & Role Management (Phase 2)
-
-### 7.1 Architecture & User Model Decision
-To maintain clean database integrity with Django's existing authentication tables, we use a clean `OneToOne` `UserProfile` model linked to Django's standard `User` model:
-- Utilizes Django's battle-tested PBKDF2 password hashing.
-- Supports case-insensitive email-based authentication via `accounts.backends.EmailOrUsernameBackend`.
-- Automatic profile creation and synchronization handled via `post_save` signals in `accounts/signals.py`.
-- Roles supported: `STUDENT`, `ADMIN`, `GUEST`.
-
-### 7.2 User Roles & Access Policy
-1. **STUDENT**:
-   - Registered through public signup (`POST /api/auth/register/`).
-   - Can log in, obtain JWT access/refresh tokens, and access student features.
-2. **ADMIN**:
-   - **Never selectable during public registration.** Attempts to submit `role: ADMIN` are strictly rejected.
-   - Created or promoted exclusively through secure server-side management commands.
-   - Has full access to Django admin and upcoming admin question/analytics management.
-3. **GUEST**:
-   - Allows prospective students to explore the platform without permanent score storage.
-   - Managed client-side and authenticated via temporary guest state.
-
-### 7.3 Admin Setup & Promotion Commands
-
-#### Create a New Administrator Account:
-```bash
-# Interactive mode (prompts for username, email, full name, and password securely):
+# Interactive administrator creation
 python manage.py setup_admin
 
-# Non-interactive mode (e.g. for deployment/scripting):
-python manage.py setup_admin --username admin --email admin@skillbyte.edu --name "System Administrator" --password "SecureAdminPassword123"
+# Or promote an existing registered user
+python manage.py promote_admin --email admin@skillbyte.edu
 ```
 
-#### Promote an Existing Student to Administrator:
+#### Step 7: Launch Development Server
 ```bash
-python manage.py promote_admin --email student@skillbyte.edu
+python manage.py runserver 127.0.0.1:8000
 ```
+Open your browser and navigate to **`http://127.0.0.1:8000/`**.
 
 ---
 
-## 8. Question Bank & Assessments Foundation (Phase 3)
+## 7. Running the Automated Test Suite
 
-### 8.1 Core Models & Schema Design
-- **`Question`**: Unified model supporting both `MCQ` and `CODE` assessment items.
-  - Categories:
-    - **MCQ Subjects**: `General Knowledge`, `English`, `Mathematics`
-    - **Coding Categories**: `Python`, `Java`, `C++`, `DSA`
-  - Difficulties: `EASY`, `MEDIUM`, `HARD`
-  - Resource Limits: `time_limit` (seconds), `memory_limit` (MB).
-  - Coding Specs: `input_format`, `output_format`, `constraints`, `sample_input`, `sample_output`, `starter_code` (JSON dictionary for language templates).
-- **`QuestionOption`**: Options for MCQ questions. Foreign key to `Question`.
-  - Stores `option_key` (A, B, C, D), `option_text`, and `is_correct`.
-  - **Security Rule**: `is_correct` is strictly omitted from student serializers.
-- **`TestCase`**: Test suites for Coding problems. Foreign key to `Question`.
-  - Stores `input_data`, `expected_output`, `is_hidden`, `marks`, `time_limit`, `memory_limit`.
-  - **Security Rule**: Hidden test cases (`is_hidden=True`) and their expected outputs are strictly excluded from student APIs.
-- **`AssessmentAttempt`**: Assessment sessions initiated by students or guests.
-  - Supports guest attempts (`user=None`, `session_id` populated) and registered student attempts (`user=User`).
-  - Statuses: `IN_PROGRESS`, `COMPLETED`, `ABANDONED`.
-- **`MCQAnswer`**: Records chosen options, correctness, and marks per question attempt.
-- **`CodingSubmission`**: Foundation for code submissions; tracks `language`, `source_code`, `status` (`ACCEPTED`, `PARTIAL`, `WRONG_ANSWER`, `COMPILATION_ERROR`, `RUNTIME_ERROR`, `TIME_LIMIT_EXCEEDED`, `SERVICE_UNAVAILABLE`, `PENDING`), `score`, `passed_test_cases`, `execution_time`, `memory_usage`, and `error_output`.
-- **`AssessmentResult`**: One-to-one summary result linked to `AssessmentAttempt`, calculating `obtained_marks`, `total_marks`, and `percentage`.
+SkillByte contains 68 automated unit and integration tests covering authentication, question bank management, assessment lifecycles, Judge0 integration, scoring deduplication, leaderboards, and administrative analytics:
 
-### 8.2 Database Seeding Command
-A safe development command populates initial questions with options and test cases:
 ```bash
-python manage.py seed_questions
+cd backend
+
+# Run the complete test suite (all 5 modules)
+python manage.py test questions.tests_phase11 questions.tests_phase10 questions.tests_phase9 questions.tests accounts
+```
+
+### Verified Test Results:
+```shell
+Creating test database for alias 'default'...
+System check identified no issues (0 silenced).
+....................................................................
+----------------------------------------------------------------------
+Ran 68 tests in 75.260s
+
+OK
+Destroying test database for alias 'default'...
 ```
 
 ---
 
-## 9. MCQ Assessment Engine (Phase 4)
+## 8. Chrome / CDP End-to-End Browser Verification
 
-### 9.1 Assessment Lifecycle & Architecture
-1. **Selection & Initiation (`POST /api/assessments/mcq/start/`)**:
-   - Students or Guests configure `category` (General Knowledge, English, Mathematics), `difficulty` (EASY, MEDIUM, HARD), and `question_count`.
-   - The server queries active questions, performs safe randomization (`.order_by('?')`), calculates total score and duration, and instantiates an `AssessmentAttempt` with status `IN_PROGRESS`.
-   - Questions are returned with sanitized options (**`is_correct` is strictly omitted**).
-2. **Real-Time Authoritative Timer**:
-   - The server records `started_at` and `time_limit_seconds`. The frontend display is merely visual.
-   - When time expires, server-side checks reject further answers and automatically execute evaluation.
-3. **Interactive Answer Submission (`POST /api/assessments/mcq/<id>/answer/`)**:
-   - Submits `question_id` and `option_id`.
-   - Validates that the question belongs to this specific attempt and the option belongs to the question.
-   - Updates `MCQAnswer` records. Final marks are NOT calculated or exposed on the client.
-4. **Server-Side Scoring & Submission (`POST /api/assessments/mcq/<id>/submit/`)**:
-   - Evaluates each answer against `QuestionOption.is_correct`.
-   - Allocates `question.marks` for correct answers and 0 for incorrect or unanswered questions.
-   - Computes `obtained_marks`, `total_marks`, `percentage`, `correct_answers`, `wrong_answers`, and `unanswered`.
-   - Marks attempt as `COMPLETED` and records an immutable `AssessmentResult`.
-   - Double submissions and answering completed attempts are strictly prevented.
-5. **Results & Question Review (`GET /api/assessments/mcq/<id>/result/`)**:
-   - Provides score breakdown and review cards showing chosen options, correct answers, and detailed explanations.
-6. **Student History (`GET /api/assessments/my-attempts/`)**:
-   - Authenticated students can review their past assessment attempts. Strictly isolated so students only see their own attempts.
-7. **Guest Flow vs. Student Flow**:
-   - **Guests**: `user=None`. Secured via an automated `session_id` generated at start. Results are displayed but not permanently associated with student leaderboards.
-   - **Students**: Authenticated via JWT Bearer token. Attempts are permanently stored and linked to `request.user`.
+In addition to automated Python tests, 10 complete user journeys were verified using the Chrome DevTools Protocol (CDP) on an active local instance:
+
+| # | User Scenario Verified | Target Route | Result | Console Errors |
+|:---:|---|---|:---:|:---:|
+| 1 | Student Profile Editing & Immediate Navbar Reflection | `/profile/` | **PASS** | 0 |
+| 2 | Secure Password Change with Old Password Verification | `/profile/` | **PASS** | 0 |
+| 3 | Responsive Navbar Toggle on Mobile Viewport (375px) | `/` | **PASS** | 0 |
+| 4 | Active Assessment Detection & Resumption across Reload | `/coding/assessment/<id>/` | **PASS** | 0 |
+| 5 | Explicit Assessment Abandonment with Modal Dialog | `/assessments/mcq/<id>/` | **PASS** | 0 |
+| 6 | Solution Utilities: Copy Code, Download File, Practice Again | `/coding/result/<id>/` | **PASS** | 0 |
+| 7 | Admin Analytics KPI Dashboard & One-Click CSV Export | `/admin/analytics/` | **PASS** | 0 |
+| 8 | RBAC Enforcement (Student/Guest Blocked from Admin) | `/admin/questions/` | **PASS** | 0 |
+| 9 | Custom Branded Error Templates (404, 403, 500) | `/invalid-route/` | **PASS** | 0 |
+| 10 | JavaScript Console Error Monitoring across All Views | All Primary Pages | **PASS** | **0** |
 
 ---
 
----
+## 9. Security & Sandboxing Highlights
 
-## 10. Live Coding Assessment Module (Phase 5)
-
-### 10.1 Live Coding Architecture & Workflow
-1. **Problem Directory & Setup (`/coding/`, `/coding/setup/`)**:
-   - Students and Guests can browse coding problems across **Python**, **Java**, **C++**, and **DSA**.
-   - Filter by programming category and difficulty level (`EASY`, `MEDIUM`, `HARD`), or configure custom assessment time limits (15, 30, 45, 60 minutes).
-2. **Monaco Editor Workspace (`/coding/assessment/<attempt_id>/`)**:
-   - Integrated full-featured code editor loaded securely from CDN (`https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/`).
-   - Theme: `vs-dark`, JetBrains Mono typography, syntax highlighting, line numbers, automatic layout, and minimap.
-   - Dynamic language switching (Python, Java, C++) with confirmation modals preventing accidental code loss.
-   - Language-specific starter code templates loaded directly from the database question model.
-3. **Strict Security & Zero Information Leakage**:
-   - **Hidden Testcases Protected**: `is_hidden=True` test cases and their expected outputs are strictly filtered out by the serializer and never sent over the network.
-   - Only sample, public test cases are provided for candidate guidance.
-4. **Honest Execution Model & Judge0 Readiness**:
-   - **No Arbitrary Local Code Execution**: To ensure absolute server safety, no arbitrary code is ever executed directly on the host machine using `subprocess` or `os.system`.
-   - **Informative "Run Code" Modal**: The "Run Code" button explicitly notifies the candidate that remote automated judging is scheduled for Phase 6 Judge0 integration. No fake or fabricated verdicts are generated.
-5. **Server-Authoritative Timer & PENDING Submissions**:
-   - The countdown timer is tracked server-side (`started_at + time_limit_seconds`).
-   - Submissions sent to `POST /api/assessments/coding/<attempt_id>/submit/` are persisted to PostgreSQL in the `CodingSubmission` model with status `PENDING`.
-   - The attempt transitions to `COMPLETED`, recording timestamp and language for evaluation in Phase 6.
-6. **Submission Result Page (`/coding/result/<attempt_id>/`)**:
-   - Provides a comprehensive submission summary, selected language, time taken, submitted source code view, and clear `PENDING` status badge.
+- **PBKDF2 Password Hashing**: 600,000 SHA-256 iterations with unique cryptographic salt per user.
+- **Stateless JWT Tokens**: Signed via HS256 with automatic rotation on refresh and immediate blacklisting on logout.
+- **Zero-Leakage Data Sanitization**: Correct answer flags (`is_correct`) and hidden test cases (`is_hidden=True`) are strictly stripped by serializers before transmitting payloads to candidates.
+- **Judge0 Container Hardening**: Untrusted student code runs inside throwaway Docker containers executed as unprivileged user `nobody` with 2.0s CPU limits, 256 MB memory caps, and completely disabled network interfaces (`--net none`).
+- **Server-Authoritative Timing**: Timestamps are computed server-side (`started_at`); client-side JavaScript timer manipulation cannot grant extra exam time.
+- **SQL & XSS Injection Protection**: 100% Django ORM parameterized queries; Django template auto-escaping; safe DOM handling.
+- **DRF Rate Throttling**: 15 req/min on authentication, 30 req/min on code execution, 120 req/min on anonymous endpoints.
 
 ---
 
-## 11. REST API Endpoints
+## 10. Future Scope & Roadmap
 
-### Core & Health
-| Method | Endpoint | Access | Description |
-|:---|:---|:---|:---|
-| `GET` | `/api/health/` | Public | System and DRF operational health status |
-
-### Authentication (Phase 2)
-| Method | Endpoint | Access | Description |
-|:---|:---|:---|:---|
-| `POST` | `/api/auth/register/` | Public | Register new student account (enforces `STUDENT` role) |
-| `POST` | `/api/auth/login/` | Public | Email/password login; returns JWT `access` & `refresh` |
-| `POST` | `/api/auth/token/refresh/` | Public | Exchanges valid refresh token for a new access token |
-| `POST` | `/api/auth/logout/` | Authenticated | Blacklists the refresh token and terminates the session |
-| `GET` | `/api/auth/me/` | Authenticated | Returns currently authenticated user details (`id`, `name`, `email`, `role`) |
-| `GET` | `/api/auth/test-student-role/` | Student Only | Verified endpoint testing `IsStudent` permission (403 for non-students) |
-| `GET` | `/api/auth/test-admin-role/` | Admin Only | Verified endpoint testing `IsAdmin` permission (403 for students) |
-
-### Question Bank (Phase 3)
-| Method | Endpoint | Access | Description |
-|:---|:---|:---|:---|
-| `GET` | `/api/questions/` | Public / Student | List active questions with filters (`type`, `category`, `difficulty`) |
-| `GET` | `/api/questions/<id>/` | Public / Student | Sanitized question detail (omits `is_correct` & hidden test cases) |
-
-### MCQ Assessment Engine (Phase 4)
-| Method | Endpoint | Access | Description |
-|:---|:---|:---|:---|
-| `POST` | `/api/assessments/mcq/start/` | Public / Guest / Student | Start MCQ assessment session; returns attempt metadata & questions |
-| `POST` | `/api/assessments/mcq/<id>/answer/` | Attempt Owner | Record option selection for a question in an in-progress attempt |
-| `POST` | `/api/assessments/mcq/<id>/submit/` | Attempt Owner | Submit assessment, calculate official score, and produce result |
-| `GET` | `/api/assessments/mcq/<id>/result/` | Attempt Owner | View score summary and question-by-question review with explanations |
-| `GET` | `/api/assessments/my-attempts/` | Authenticated Student | List authenticated student's previous assessment attempts (MCQ + Code) |
-
-### Live Coding Assessment (Phase 5)
-| Method | Endpoint | Access | Description |
-|:---|:---|:---|:---|
-| `POST` | `/api/assessments/coding/start/` | Public / Guest / Student | Start live coding assessment session; returns sanitized problem and starter code |
-| `GET` | `/api/assessments/coding/<id>/` | Attempt Owner | Workspace state, remaining timer seconds, problem details, and saved code |
-| `POST` | `/api/assessments/coding/<id>/submit/` | Attempt Owner | Submit code solution; creates `CodingSubmission` with `PENDING` status |
-| `GET` | `/api/assessments/coding/<id>/result/` | Attempt Owner | View submitted code, language, time taken, and pending evaluation state |
+While SkillByte satisfies all requirements of the project SRS, future commercial and institutional enhancements include:
+1. **Real-Time Multiplayer Coding Duels**: Integrating Django Channels (WebSockets) and Redis for live 1v1 competitive programming matches.
+2. **Automated Plagiarism Detection**: Integrating an algorithmic code similarity engine (e.g., Stanford MOSS) to identify code duplication across candidates.
+3. **AI-Assisted Debugging Hints**: Leveraging Large Language Models (LLMs) to generate dynamic, contextual hints for failing test cases without revealing solutions.
+4. **Remote Exam Proctoring**: Client-side tab-switch detection, browser lock-down modes, and optional webcam-based presence monitoring.
 
 ---
 
-## 12. Security Notes
+## 11. Authors & Academic Acknowledgements
 
-- **Password Hashing**: Django's PBKDF2 with SHA-256 algorithm. Passwords are never returned in any API response or logged.
-- **JWT Protection**: Tokens signed with project `SECRET_KEY` loaded from environment variables.
-- **Token Blacklisting**: Logout immediately blacklists the refresh token in PostgreSQL via `rest_framework_simplejwt.token_blacklist`. Subsequent refresh requests with the blacklisted token are rejected with HTTP 401.
-- **Role Elevation Defense**: Serializer-level and view-level guards prevent clients from injecting or claiming the `ADMIN` role.
-- **Sanitized Assessment Data**: Student-facing serializers strictly exclude `is_correct` flags on MCQ options and hidden test cases (`is_hidden=True`) on coding problems.
-- **Zero Arbitrary Execution**: Server never invokes local compilers or `subprocess` commands on submitted student code. Code execution is strictly scheduled for isolated Judge0 remote sandboxing in Phase 6.
-- **Server-Side Scoring**: Clients can never submit scores or marks. Scoring is exclusively computed against database ground-truth upon submission.
-- **Ownership Isolation**: Cross-student and cross-guest access to attempts is strictly forbidden (HTTP 403).
-- **Database Safety**: 100% Django ORM queries; no raw SQL; exclusive PostgreSQL configuration.
-
+- **Students / Developers**: `[STUDENT_NAME_1]` (`[ROLL_NUMBER_1]`) & `[STUDENT_NAME_2]` (`[ROLL_NUMBER_2]`)
+- **Internal Project Supervisor**: `[PROJECT_GUIDE_NAME]`, `[DESIGNATION_OF_GUIDE]`
+- **Head of Department**: `[HOD_NAME]`, Department of `[DEPARTMENT_NAME]`
+- **Institution**: `[COLLEGE_NAME]`, `[ACADEMIC_YEAR]`
+- **License**: MIT License (for open academic and institutional use)

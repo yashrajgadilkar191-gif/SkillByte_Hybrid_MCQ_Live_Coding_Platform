@@ -150,6 +150,7 @@ const Auth = {
             const adminLinks = user?.role === 'ADMIN' ? `
                 <a href="/admin/questions/" class="btn btn-outline-warning btn-sm"><i class="bi bi-shield-lock-fill me-1"></i>Question Bank</a>
                 <a href="/admin/analytics/" class="btn btn-outline-info btn-sm"><i class="bi bi-graph-up me-1"></i>Analytics</a>
+                <a href="/admin/" class="btn btn-outline-secondary btn-sm" target="_blank"><i class="bi bi-gear-fill me-1"></i>Django Admin</a>
             ` : '';
             authNav.innerHTML = `
                 <div class="d-flex align-items-center gap-2 flex-wrap">

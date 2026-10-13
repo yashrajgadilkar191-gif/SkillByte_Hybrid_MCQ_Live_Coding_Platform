@@ -119,7 +119,7 @@
 
             <!-- Monaco Editor Container -->
             <div class="position-relative flex-grow-1" style="min-height: 500px;">
-                <div id="monaco-editor-loading" class="position-absolute w-100 h-100 d-flex align-items-center justify-content-center bg-dark text-secondary z-3" style="top: 0; left: 0;">
+                <div id="monaco-editor-loading" class="position-absolute w-100 h-100 align-items-center justify-content-center bg-dark text-secondary z-3" style="top: 0; left: 0; display: flex;">
                     <div class="text-center" id="monaco-loading-content">
                         <div class="spinner-border text-primary mb-2" role="status" id="monaco-spinner"></div>
                         <div id="monaco-loading-status-text">Initializing Monaco Editor...</div>
@@ -240,7 +240,7 @@
                 <ul class="small text-secondary mb-3">
                     <li>Assessment will transition to <strong>COMPLETED</strong>.</li>
                     <li>Your submission will be recorded in PostgreSQL with <strong>PENDING</strong> status.</li>
-                    <li>Judge0 automated grading will evaluate your solution in Phase 6.</li>
+                    <li>Your solution will be evaluated against all test cases using the Judge0 engine.</li>
                 </ul>
                 <div id="submit-error-msg" class="alert alert-danger d-none small py-2 px-3 mb-0"></div>
             </div>
@@ -384,7 +384,10 @@ function getStarterCodeForCurrentLang() {
 function hideMonacoLoading() {
     const loadingEl = document.getElementById('monaco-editor-loading');
     if (loadingEl) {
+        loadingEl.classList.remove('d-flex');
+        loadingEl.classList.add('d-none');
         loadingEl.style.display = 'none';
+        loadingEl.style.setProperty('display', 'none', 'important');
     }
 }
 
@@ -397,13 +400,31 @@ function showMonacoError(message, details) {
     if (monacoLoadTimeout) clearTimeout(monacoLoadTimeout);
     if (cdnTimeoutId) clearTimeout(cdnTimeoutId);
     console.error("Monaco Error:", message, details || "");
-    const content = document.getElementById('monaco-loading-content');
-    if (content) {
-        content.innerHTML = `
-            <div class="text-danger fw-bold fs-5 mb-2">${escapeHtml(message)}</div>
-            <div class="text-secondary small mb-3">Please verify your network connection or reload the workspace.</div>
-            <button class="btn btn-outline-light btn-sm px-3" onclick="location.reload()">Reload Workspace</button>
+    const loadingEl = document.getElementById('monaco-editor-loading');
+    if (loadingEl) {
+        loadingEl.classList.remove('d-flex');
+        loadingEl.classList.add('d-none');
+        loadingEl.style.setProperty('display', 'none', 'important');
+    }
+    const container = document.getElementById('monaco-editor-container');
+    if (container && !monacoEditor) {
+        const starter = getStarterCodeForCurrentLang();
+        container.innerHTML = `
+            <div class="p-2 bg-warning-subtle text-dark small border-bottom border-warning">
+                <strong>Offline/Fallback Editor:</strong> Monaco CDN was unreachable. You can continue writing and submitting your solution using this editor.
+            </div>
+            <textarea id="code-editor" class="form-control font-monospace bg-dark text-light border-0 p-3" style="height: 500px; width: 100%; font-size: 14px; resize: none;">${escapeHtml(starter)}</textarea>
         `;
+        const textarea = document.getElementById('code-editor');
+        if (textarea) {
+            textarea.addEventListener('input', () => {
+                codeModified = true;
+                const statusText = document.getElementById('editor-status-text');
+                if (statusText) statusText.textContent = 'Edited (unsaved)';
+            });
+        }
+        const statusText = document.getElementById('editor-status-text');
+        if (statusText) statusText.textContent = 'Fallback editor active';
     }
 }
 

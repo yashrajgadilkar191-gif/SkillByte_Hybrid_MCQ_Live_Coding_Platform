@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Dashboard Foundation — SKILLBYTE{% endblock %}
+{% block title %}Student Dashboard — SKILLBYTE{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -128,7 +128,7 @@
                         <div class="card bg-surface border border-primary border-opacity-50 h-100 p-3">
                             <div class="d-flex align-items-center justify-content-between mb-2">
                                 <span class="badge bg-primary">Theory Assessment</span>
-                                <span class="badge bg-success-subtle text-success border border-success">Active • Phase 4</span>
+                                <span class="badge bg-success-subtle text-success border border-success">Ready</span>
                             </div>
                             <h5 class="text-light fw-bold mb-1">Multiple Choice Questions</h5>
                             <p class="text-secondary small mb-3">
@@ -143,7 +143,7 @@
                         <div class="card bg-surface border border-info border-opacity-50 h-100 p-3">
                             <div class="d-flex align-items-center justify-content-between mb-2">
                                 <span class="badge bg-info text-dark">Live Coding</span>
-                                <span class="badge bg-success-subtle text-success border border-success">Active • Phase 5</span>
+                                <span class="badge bg-success-subtle text-success border border-success">Ready</span>
                             </div>
                             <h5 class="text-light fw-bold mb-1">Coding Problems</h5>
                             <p class="text-secondary small mb-3">
@@ -189,18 +189,34 @@
                     </div>
                 </div>
 
-                <!-- System Readiness & Verification Card -->
+                <!-- Assessment Guidelines Card -->
                 <div class="card bg-surface border border-secondary border-opacity-25 mb-4">
                     <div class="card-body p-4">
-                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
-                            <h6 class="text-info fw-semibold mb-0">System & Session Diagnostic</h6>
-                            <span class="badge bg-success-subtle text-success border border-success">Phase 8 Active</span>
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                            <h6 class="text-primary fw-semibold mb-0"><i class="bi bi-info-circle me-1"></i>Assessment Guidelines</h6>
+                            <span class="badge bg-primary-subtle text-primary border border-primary">SkillByte Verified</span>
                         </div>
-                        <div class="p-3 bg-darker rounded border border-secondary border-opacity-25 small font-monospace">
-                            <div><strong>Session Status:</strong> <span class="text-success">Connected</span></div>
-                            <div class="mt-1"><strong>Authenticated Endpoint:</strong> <span class="text-info">GET /api/auth/me/</span></div>
-                            <div id="dash-me-raw" class="mt-2 text-muted">Fetching profile details...</div>
+                        <div class="row g-3 small text-secondary">
+                            <div class="col-md-4">
+                                <div class="p-3 rounded bg-darker h-100 border border-secondary border-opacity-25">
+                                    <div class="fw-semibold text-light mb-1"><i class="bi bi-clock me-1 text-warning"></i>Timed Assessments</div>
+                                    <p class="mb-0">Assessments have server-authoritative countdown timers. Ensure you submit before time expires.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3 rounded bg-darker h-100 border border-secondary border-opacity-25">
+                                    <div class="fw-semibold text-light mb-1"><i class="bi bi-cpu me-1 text-info"></i>Automated Evaluation</div>
+                                    <p class="mb-0">Live coding submissions are evaluated securely using the Judge0 engine across multiple test cases.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-3 rounded bg-darker h-100 border border-secondary border-opacity-25">
+                                    <div class="fw-semibold text-light mb-1"><i class="bi bi-trophy me-1 text-success"></i>Rankings & Progress</div>
+                                    <p class="mb-0">Your highest scores and completed attempts contribute directly to the global leaderboard.</p>
+                                </div>
+                            </div>
                         </div>
+                        <div id="dash-me-raw" class="d-none"></div>
                     </div>
                 </div>
             </div>

@@ -1,81 +1,338 @@
 /* ==========================================================================
-   SKILLBYTE — Master Theme Stylesheet (Phase 1 Foundation)
+   SKILLBYTE — Professional Modern Assessment Platform Stylesheet
+   Light Neutral Theme, High-Contrast Typography & Structured Hierarchy
    ========================================================================== */
 
 :root {
-    --sb-bg-dark: #0b0f19;
-    --sb-bg-surface: #111827;
-    --sb-bg-darker: #070a12;
-    --sb-bg-card: rgba(17, 24, 39, 0.85);
-    --sb-primary: #3b82f6;
-    --sb-primary-hover: #2563eb;
-    --sb-accent: #8b5cf6;
-    --sb-success: #10b981;
-    --sb-warning: #f59e0b;
-    --sb-danger: #ef4444;
-    --sb-text-main: #f3f4f6;
-    --sb-text-muted: #9ca3af;
-    --sb-border: rgba(255, 255, 255, 0.08);
+    /* Core Assessment Color Palette */
+    --sb-bg-page: #f8fafc;
+    --sb-bg-card: #ffffff;
+    --sb-bg-surface: #f8fafc;
+    --sb-bg-darker: #f1f5f9;
+    --sb-bg-navy: #0f172a;
+    --sb-border: #e2e8f0;
+    --sb-border-focus: #3b82f6;
+
+    /* Semantic Accents */
+    --sb-primary: #2563eb;
+    --sb-primary-hover: #1d4ed8;
+    --sb-accent: #7c3aed;
+    --sb-success: #16a34a;
+    --sb-warning: #d97706;
+    --sb-danger: #dc2626;
+    --sb-info: #0284c7;
+
+    /* Typography Colors */
+    --sb-text-title: #0f172a;
+    --sb-text-body: #334155;
+    --sb-text-muted: #64748b;
+    --sb-text-dim: #94a3b8;
+
+    /* Fonts */
     --sb-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --sb-font-mono: 'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
+/* Base Body */
 body.skillbyte-body {
-    background-color: var(--sb-bg-dark);
-    color: var(--sb-text-main);
+    background-color: var(--sb-bg-page) !important;
+    color: var(--sb-text-body) !important;
     font-family: var(--sb-font-sans);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
 }
 
+/* Dark Navy Header / Footer for Platform Framing */
 .bg-dark-navy {
-    background-color: var(--sb-bg-surface) !important;
+    background-color: var(--sb-bg-navy) !important;
+    border-color: #1e293b !important;
 }
 
-.bg-glass {
-    background-color: var(--sb-bg-card);
-    backdrop-filter: blur(12px);
-    border: 1px solid var(--sb-border);
+/* Headings */
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+    color: var(--sb-text-title) !important;
+    letter-spacing: -0.015em;
+}
+
+/* Card Foundations */
+.card {
+    border-radius: 12px;
+}
+
+.bg-glass,
+.card.bg-glass {
+    background-color: var(--sb-bg-card) !important;
+    backdrop-filter: none !important;
+    border: 1px solid var(--sb-border) !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05) !important;
+    color: var(--sb-text-body) !important;
 }
 
 .bg-surface {
     background-color: var(--sb-bg-surface) !important;
+    border: 1px solid var(--sb-border) !important;
 }
 
 .bg-darker {
     background-color: var(--sb-bg-darker) !important;
+    border: 1px solid var(--sb-border) !important;
 }
 
-.text-secondary {
+/* Text Overrides for Modern Light Theme */
+body.skillbyte-body .text-light,
+body.skillbyte-body h1.text-light,
+body.skillbyte-body h2.text-light,
+body.skillbyte-body h3.text-light,
+body.skillbyte-body h4.text-light,
+body.skillbyte-body h5.text-light,
+body.skillbyte-body h6.text-light,
+body.skillbyte-body strong.text-light,
+body.skillbyte-body span.text-light {
+    color: var(--sb-text-title) !important;
+}
+
+body.skillbyte-body .text-light-subtle {
+    color: var(--sb-text-body) !important;
+}
+
+body.skillbyte-body .text-secondary {
     color: var(--sb-text-muted) !important;
+}
+
+body.skillbyte-body .text-muted {
+    color: var(--sb-text-dim) !important;
+}
+
+/* Exceptions: Preserve Crisp White/Muted in Header & Footer */
+.bg-dark-navy .text-light,
+.bg-dark-navy h1, .bg-dark-navy h2, .bg-dark-navy h3,
+.bg-dark-navy strong,
+footer .text-light,
+footer strong {
+    color: #ffffff !important;
+}
+
+.bg-dark-navy .text-muted,
+.bg-dark-navy .navbar-text,
+footer .text-muted {
+    color: #94a3b8 !important;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--sb-primary) !important;
+    border-color: var(--sb-primary) !important;
+    color: #ffffff !important;
+    font-weight: 500;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: var(--sb-primary-hover) !important;
+    border-color: var(--sb-primary-hover) !important;
+    color: #ffffff !important;
+}
+
+.btn-success {
+    background-color: var(--sb-success) !important;
+    border-color: var(--sb-success) !important;
+    color: #ffffff !important;
+}
+
+/* Light Outline Buttons on White Cards */
+.card .btn-outline-light,
+main .btn-outline-light {
+    border-color: #cbd5e1 !important;
+    color: #334155 !important;
+    background-color: #ffffff !important;
+}
+
+.card .btn-outline-light:hover,
+main .btn-outline-light:hover {
+    background-color: #f1f5f9 !important;
+    border-color: #94a3b8 !important;
+    color: #0f172a !important;
+}
+
+/* Preserve Navbar Outline Buttons */
+.bg-dark-navy .btn-outline-light {
+    border-color: #475569 !important;
+    color: #f8fafc !important;
+    background-color: transparent !important;
+}
+
+.bg-dark-navy .btn-outline-light:hover {
+    background-color: #1e293b !important;
+    color: #ffffff !important;
+}
+
+/* Form Controls */
+.form-control,
+.form-select {
+    background-color: #ffffff !important;
+    color: var(--sb-text-title) !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px;
+}
+
+.form-control:focus,
+.form-select:focus {
+    background-color: #ffffff !important;
+    border-color: var(--sb-primary) !important;
+    color: var(--sb-text-title) !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+}
+
+.input-group-text {
+    background-color: #f1f5f9 !important;
+    color: #475569 !important;
+    border: 1px solid #cbd5e1 !important;
+}
+
+/* Tables */
+.table,
+.table-dark {
+    --bs-table-bg: transparent !important;
+    --bs-table-striped-bg: #f8fafc !important;
+    --bs-table-hover-bg: #f1f5f9 !important;
+    color: var(--sb-text-body) !important;
+    border-color: var(--sb-border) !important;
+}
+
+.table th,
+.table-dark th {
+    background-color: #f8fafc !important;
+    color: #475569 !important;
+    font-weight: 600 !important;
+    border-bottom: 2px solid var(--sb-border) !important;
+}
+
+.table td,
+.table-dark td {
+    color: var(--sb-text-body) !important;
+    border-bottom: 1px solid var(--sb-border) !important;
+}
+
+/* Modals */
+.modal-content,
+.modal-content-custom {
+    background-color: #ffffff !important;
+    color: var(--sb-text-title) !important;
+    border: 1px solid var(--sb-border) !important;
+    border-radius: 14px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+}
+
+.modal-header,
+.modal-footer {
+    border-color: #f1f5f9 !important;
+}
+
+.modal .btn-close-white {
+    filter: none !important;
+}
+
+/* Code Snippets & Samples */
+pre.code-sample,
+pre.code-view {
+    background-color: #0f172a !important;
+    border: 1px solid #1e293b !important;
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: #38bdf8 !important;
+    font-family: var(--sb-font-mono) !important;
+    font-size: 0.88rem;
 }
 
 .font-monospace {
     font-family: var(--sb-font-mono) !important;
 }
 
-/* Card Enhancements */
-.card {
+/* Badges */
+.badge.bg-primary-subtle {
+    background-color: #dbeafe !important;
+    color: #1d4ed8 !important;
+    border: 1px solid #bfdbfe !important;
+}
+
+.badge.bg-success-subtle {
+    background-color: #dcfce7 !important;
+    color: #15803d !important;
+    border: 1px solid #bbf7d0 !important;
+}
+
+.badge.bg-warning-subtle {
+    background-color: #fef3c7 !important;
+    color: #b45309 !important;
+    border: 1px solid #fde68a !important;
+}
+
+.badge.bg-danger-subtle {
+    background-color: #fee2e2 !important;
+    color: #b91c1c !important;
+    border: 1px solid #fecaca !important;
+}
+
+.badge.bg-info-subtle {
+    background-color: #e0f2fe !important;
+    color: #0369a1 !important;
+    border: 1px solid #bae6fd !important;
+}
+
+/* Stat Cards */
+.stat-card,
+.admin-metric-card,
+.metric-card {
+    background-color: #ffffff !important;
+    border: 1px solid var(--sb-border) !important;
     border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
-/* API Badge */
-#api-status-badge {
-    font-size: 0.8rem;
-    padding: 0.35rem 0.75rem;
-    transition: all 0.3s ease;
+.podium-card {
+    background-color: #ffffff !important;
+    border: 1px solid var(--sb-border) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
 }
 
-.badge-connected {
-    background-color: #065f46 !important;
-    color: #34d399 !important;
-    border: 1px solid #10b981;
+/* MCQ Options Interaction */
+#options-container .card {
+    background-color: #ffffff !important;
+    border: 1.5px solid #cbd5e1 !important;
+    color: #0f172a !important;
+    transition: all 0.15s ease-in-out;
 }
 
-.badge-error {
-    background-color: #7f1d1d !important;
-    color: #f87171 !important;
-    border: 1px solid #ef4444;
+#options-container .card:hover {
+    border-color: #3b82f6 !important;
+    background-color: #f8fafc !important;
+}
+
+#options-container .card.border-primary {
+    background-color: #eff6ff !important;
+    border: 2px solid #2563eb !important;
+    box-shadow: 0 0 0 1px #2563eb !important;
+}
+
+#options-container .badge {
+    color: #334155;
+    background-color: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    font-weight: 600;
+}
+
+#options-container .border-primary .badge,
+#options-container .badge.bg-primary {
+    background-color: #2563eb !important;
+    color: #ffffff !important;
+    border-color: #2563eb !important;
+}
+
+.category-pill {
+    background: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #334155 !important;
 }
 

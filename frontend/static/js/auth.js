@@ -146,42 +146,45 @@ const Auth = {
 
         if (this.isLoggedIn()) {
             const user = this.getUser();
-            const roleBadgeClass = user?.role === 'ADMIN' ? 'bg-danger' : 'bg-primary';
+            const initial = (user?.name || user?.email || 'U').charAt(0).toUpperCase();
+            const roleBadgeClass = user?.role === 'ADMIN' ? 'bg-danger-subtle text-danger border border-danger' : 'bg-primary-subtle text-primary border border-primary';
             const adminLinks = user?.role === 'ADMIN' ? `
-                <a href="/admin/questions/" class="btn btn-outline-warning btn-sm"><i class="bi bi-shield-lock-fill me-1"></i>Question Bank</a>
+                <a href="/admin/questions/" class="btn btn-outline-warning btn-sm"><i class="bi bi-shield-lock me-1"></i>Bank</a>
                 <a href="/admin/analytics/" class="btn btn-outline-info btn-sm"><i class="bi bi-graph-up me-1"></i>Analytics</a>
-                <a href="/admin/" class="btn btn-outline-secondary btn-sm" target="_blank"><i class="bi bi-gear-fill me-1"></i>Django Admin</a>
             ` : '';
             authNav.innerHTML = `
                 <div class="d-flex align-items-center gap-2 flex-wrap">
-                    <span class="text-light small">Hello, <strong>${escapeHtml(user?.name || 'User')}</strong></span>
-                    <span class="badge ${roleBadgeClass} small">${escapeHtml(user?.role || 'STUDENT')}</span>
+                    <div class="d-flex align-items-center gap-2 px-2 py-1 bg-surface rounded-pill border border-secondary border-opacity-25">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 24px; height: 24px; font-size: 0.75rem;">
+                            ${escapeHtml(initial)}
+                        </div>
+                        <span class="text-light small fw-medium">${escapeHtml(user?.name || 'Candidate')}</span>
+                        <span class="badge ${roleBadgeClass} small py-0 px-2">${escapeHtml(user?.role || 'STUDENT')}</span>
+                    </div>
                     ${adminLinks}
-                    <a href="/dashboard/" class="btn btn-outline-info btn-sm">Dashboard</a>
-                    <a href="/profile/" class="btn btn-outline-light btn-sm"><i class="bi bi-person-circle me-1"></i>Profile</a>
-                    <a href="/leaderboard/" class="btn btn-outline-warning btn-sm"><i class="bi bi-trophy-fill me-1"></i>Leaderboard</a>
-                    <a href="/attempts/" class="btn btn-outline-light btn-sm">My Attempts</a>
-                    <button class="btn btn-outline-danger btn-sm" onclick="Auth.logout()">Logout</button>
+                    <a href="/profile/" class="btn btn-outline-light btn-sm" title="My Profile"><i class="bi bi-person"></i></a>
+                    <a href="/attempts/" class="btn btn-outline-light btn-sm" title="My History"><i class="bi bi-clock-history"></i></a>
+                    <button class="btn btn-outline-danger btn-sm" onclick="Auth.logout()"><i class="bi bi-box-arrow-right me-1"></i>Logout</button>
                 </div>
             `;
         } else if (this.isGuest()) {
             authNav.innerHTML = `
-                <div class="d-flex align-items-center gap-2">
-                    <span class="badge bg-warning text-dark small">Guest Mode</span>
-                    <a href="/dashboard/" class="btn btn-outline-info btn-sm">Dashboard</a>
-                    <a href="/leaderboard/" class="btn btn-outline-warning btn-sm"><i class="bi bi-trophy-fill me-1"></i>Leaderboard</a>
-                    <a href="/attempts/" class="btn btn-outline-light btn-sm">My Attempts</a>
-                    <a href="/login/" class="btn btn-primary btn-sm">Login</a>
-                    <a href="/register/" class="btn btn-outline-light btn-sm">Register</a>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <span class="badge bg-warning-subtle text-warning border border-warning px-2 py-1 small">
+                        <i class="bi bi-person-badge me-1"></i>Guest Mode
+                    </span>
+                    <a href="/login/" class="btn btn-outline-light btn-sm">Sign In</a>
+                    <a href="/register/" class="btn btn-primary btn-sm">Register</a>
                 </div>
             `;
         } else {
             authNav.innerHTML = `
-                <div class="d-flex align-items-center gap-2">
-                    <a href="/leaderboard/" class="btn btn-outline-warning btn-sm"><i class="bi bi-trophy-fill me-1"></i>Leaderboard</a>
-                    <button class="btn btn-outline-warning btn-sm" onclick="Auth.setGuestMode(); window.location.href='/dashboard/';">Continue as Guest</button>
-                    <a href="/login/" class="btn btn-outline-light btn-sm">Login</a>
-                    <a href="/register/" class="btn btn-primary btn-sm">Register</a>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <button class="btn btn-outline-light btn-sm" onclick="Auth.setGuestMode(); window.location.href='/dashboard/';">
+                        <i class="bi bi-lightning-charge text-warning me-1"></i>Guest Access
+                    </button>
+                    <a href="/login/" class="btn btn-outline-light btn-sm">Sign In</a>
+                    <a href="/register/" class="btn btn-primary btn-sm">Register Free</a>
                 </div>
             `;
         }

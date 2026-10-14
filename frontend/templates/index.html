@@ -1,89 +1,343 @@
 {% extends 'base.html' %}
 
-{% block title %}SKILLBYTE — Where Theory Meets Practice{% endblock %}
+{% block title %}SKILLBYTE — Next-Gen Hybrid Assessment Platform{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-10">
-        <!-- Hero Card -->
-        <div class="card shadow-lg border-0 bg-glass text-light mb-4">
-            <div class="card-body p-5">
-                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
-                    <div>
-                        <span class="badge bg-primary-subtle text-primary border border-primary px-3 py-1 mb-2">SkillByte v1.0.0 — Final Release</span>
-                        <h1 class="display-5 fw-bold mb-1">SKILLBYTE</h1>
-                        <p class="lead text-secondary mb-0">"Where Theory Meets Practice"</p>
+<!-- ==========================================================================
+     HERO SECTION
+     ========================================================================== -->
+<div class="row align-items-center g-5 py-3 py-lg-4 mb-5">
+    <!-- Left Hero Column: Copy & Actions -->
+    <div class="col-lg-6">
+        <!-- Floating Pill Badge -->
+        <div class="d-inline-flex align-items-center gap-2 px-3 py-1_5 rounded-pill bg-surface border border-secondary border-opacity-25 mb-3">
+            <span class="badge-pulse-emerald py-0 px-2"><span class="pulse-dot"></span> Next-Gen Assessment</span>
+            <span class="text-secondary small fw-medium">v1.0 Final Release</span>
+        </div>
+
+        <h1 class="display-4 fw-extrabold text-light mb-3 lh-1_1">
+            Where <span class="text-gradient-cyan">Theory</span> Meets <span class="text-gradient-primary">Live Code</span>.
+        </h1>
+
+        <p class="lead text-secondary mb-4 fs-5" style="max-width: 520px;">
+            The unified assessment battleground engineered for ambitious developers. Seamlessly toggle between conceptual multiple-choice rigor and in-browser live code execution.
+        </p>
+
+        <!-- CTA Action Buttons -->
+        <div class="d-flex align-items-center flex-wrap gap-3 mb-4">
+            <a href="/register/" class="btn btn-primary px-4 py-2_5 fw-semibold shadow-lg">
+                <i class="bi bi-rocket-takeoff me-1"></i>Start Free Challenge
+            </a>
+            <button class="btn btn-outline-warning px-3 py-2_5" onclick="Auth.setGuestMode(); window.location.href='/dashboard/';">
+                <i class="bi bi-lightning-charge me-1"></i>1-Click Guest Pass
+            </button>
+            <a href="/login/" class="btn btn-outline-light px-3 py-2_5">
+                <i class="bi bi-box-arrow-in-right me-1"></i>Sign In
+            </a>
+        </div>
+
+        <!-- Metric Badges Under Hero -->
+        <div class="d-flex align-items-center gap-4 pt-2 text-secondary small flex-wrap">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-shield-check text-cyan fs-5"></i>
+                <span>Strict Anti-Farming Score</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-cpu text-primary fs-5"></i>
+                <span>Monaco & Judge0 Sandboxed</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-trophy text-warning fs-5"></i>
+                <span>Dynamic Skill Tiers</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Hero Column: Interactive Live Preview Arena Cards -->
+    <div class="col-lg-6">
+        <div class="position-relative">
+            <!-- Ambient Card Glow -->
+            <div class="position-absolute top-50 start-50 translate-middle w-100 h-100 bg-primary opacity-10 rounded-circle filter-blur" style="filter: blur(80px); pointer-events: none;"></div>
+
+            <!-- Card 1: Interactive Live Code IDE Preview -->
+            <div class="card bg-glass text-light mb-3 card-hover-lift shadow-lg">
+                <div class="card-header bg-transparent border-bottom border-secondary border-opacity-10 d-flex align-items-center justify-content-between py-2_5 px-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="rounded-circle bg-danger d-inline-block" style="width: 10px; height: 10px;"></span>
+                        <span class="rounded-circle bg-warning d-inline-block" style="width: 10px; height: 10px;"></span>
+                        <span class="rounded-circle bg-success d-inline-block" style="width: 10px; height: 10px;"></span>
+                        <span class="font-monospace text-muted small ms-2"><i class="bi bi-code-slash me-1"></i>solution.py</span>
                     </div>
-                    <div class="text-end">
-                        <span class="badge bg-success-subtle text-success fs-6 px-3 py-2 border border-success">
-                            ✓ Production Ready
-                        </span>
+                    <span class="badge bg-primary-subtle text-primary small py-1 px-2 font-monospace">Python 3.11</span>
+                </div>
+                <div class="card-body p-3 font-monospace small">
+                    <div class="text-secondary mb-1"><span class="text-muted">1</span> <span class="text-primary">def</span> <span class="text-warning">two_sum</span>(nums: list[int], target: int) -&gt; list[int]:</div>
+                    <div class="text-secondary mb-1"><span class="text-muted">2</span> &nbsp;&nbsp;&nbsp;&nbsp;seen = {}</div>
+                    <div class="text-secondary mb-1"><span class="text-muted">3</span> &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-primary">for</span> i, num <span class="text-primary">in</span> enumerate(nums):</div>
+                    <div class="text-secondary mb-1"><span class="text-muted">4</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;diff = target - num</div>
+                    <div class="text-secondary mb-1"><span class="text-muted">5</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-primary">if</span> diff <span class="text-primary">in</span> seen: <span class="text-primary">return</span> [seen[diff], i]</div>
+                    <div class="text-secondary"><span class="text-muted">6</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;seen[num] = i</div>
+
+                    <!-- Interactive Diagnostic Run Simulator -->
+                    <div class="mt-3 pt-2 border-top border-secondary border-opacity-10 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div id="hero-ide-status" class="text-secondary small font-monospace">
+                            <span class="text-success"><i class="bi bi-check-circle-fill me-1"></i>Sample Test 1: Passed (8ms)</span>
+                        </div>
+                        <button id="hero-run-btn" class="btn btn-outline-info btn-sm py-1 px-2 font-monospace" onclick="simulateHeroCodeRun()">
+                            <i class="bi bi-play-fill me-1"></i>Run Diagnostics
+                        </button>
                     </div>
                 </div>
+            </div>
 
-                <p class="text-light-50 fs-5 mb-4">
-                    SkillByte is a hybrid assessment platform bridging theoretical MCQ evaluations and live code executions into a single, unified environment.
-                </p>
-
-                <!-- Quick Action Buttons -->
-                <div class="d-flex align-items-center flex-wrap gap-3 mb-4">
-                    <a href="/register/" class="btn btn-primary px-4 py-2 fw-semibold">Register as Student</a>
-                    <a href="/login/" class="btn btn-outline-light px-4 py-2">Sign In</a>
-                    <button class="btn btn-outline-warning px-4 py-2" onclick="Auth.setGuestMode(); window.location.href='/dashboard/';">Continue as Guest</button>
-                </div>
-
-                <hr class="border-secondary opacity-25 my-4">
-
-                <!-- System Readiness & Health Checker Card -->
-                <div class="row g-4">
-                    <div class="col-md-6">
-                        <div class="card bg-surface border border-secondary border-opacity-25 h-100">
-                            <div class="card-body">
-                                <h5 class="card-title text-primary fw-semibold mb-3">Core Platform Status</h5>
-                                <ul class="list-unstyled mb-0 d-flex flex-column gap-2 text-secondary small">
-                                    <li class="d-flex justify-content-between align-items-center">
-                                        <span>Backend Framework:</span>
-                                        <span class="text-light fw-medium">Django 5.2 (REST Framework)</span>
-                                    </li>
-                                    <li class="d-flex justify-content-between align-items-center">
-                                        <span>Authentication:</span>
-                                        <span class="text-success fw-medium">JWT (Access + Refresh + Blacklist)</span>
-                                    </li>
-                                    <li class="d-flex justify-content-between align-items-center">
-                                        <span>User Roles:</span>
-                                        <span class="text-light fw-medium">STUDENT, ADMIN, GUEST</span>
-                                    </li>
-                                    <li class="d-flex justify-content-between align-items-center">
-                                        <span>Primary Database:</span>
-                                        <span class="text-light fw-medium">PostgreSQL (Django ORM)</span>
-                                    </li>
-                                </ul>
-                            </div>
+            <!-- Card 2: Interactive Theory MCQ Teaser -->
+            <div class="card bg-glass text-light card-hover-lift shadow-lg">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="badge bg-info-subtle text-info small"><i class="bi bi-patch-question me-1"></i>Theory Spotlight &bull; DSA</span>
+                        <span class="text-muted small font-monospace"><i class="bi bi-clock me-1"></i>Timer Authoritative</span>
+                    </div>
+                    <p class="text-light fw-medium mb-3 small">
+                        What is the guaranteed worst-case time complexity of searching a key in a balanced AVL tree?
+                    </p>
+                    <div class="row g-2" id="hero-mcq-options">
+                        <div class="col-6">
+                            <button class="btn btn-outline-light w-100 text-start py-1_5 px-2 small font-monospace" onclick="testHeroMCQ(this, false)">
+                                <span class="badge bg-surface me-1">A</span> O(1)
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-outline-light w-100 text-start py-1_5 px-2 small font-monospace" onclick="testHeroMCQ(this, true)">
+                                <span class="badge bg-surface me-1">B</span> O(log n)
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-outline-light w-100 text-start py-1_5 px-2 small font-monospace" onclick="testHeroMCQ(this, false)">
+                                <span class="badge bg-surface me-1">C</span> O(n)
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-outline-light w-100 text-start py-1_5 px-2 small font-monospace" onclick="testHeroMCQ(this, false)">
+                                <span class="badge bg-surface me-1">D</span> O(n log n)
+                            </button>
                         </div>
                     </div>
-
-                    <div class="col-md-6">
-                        <div class="card bg-surface border border-secondary border-opacity-25 h-100">
-                            <div class="card-body">
-                                <h5 class="card-title text-primary fw-semibold mb-3">Health Check API</h5>
-                                <div class="p-3 bg-darker rounded border border-secondary border-opacity-25 mb-3 font-monospace small">
-                                    <span class="text-info">GET</span> <a href="/api/health/" target="_blank" class="text-light text-decoration-none">/api/health/</a>
-                                </div>
-                                <div id="health-live-response" class="p-3 bg-darker rounded border border-secondary border-opacity-25 font-monospace small text-muted">
-                                    Connecting to API...
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-4 p-3 bg-darker rounded border border-secondary border-opacity-25 d-flex align-items-center justify-content-between flex-wrap gap-2 text-secondary small">
-                    <span>Platform Status: <strong>SkillByte v1.0.0</strong> <span class="badge bg-success ms-1">Final Release</span></span>
-                    <span>Architecture: <em>Hybrid MCQ & Live Coding Assessment Platform</em></span>
+                    <div id="hero-mcq-feedback" class="small mt-2 d-none font-monospace"></div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- ==========================================================================
+     ARENA PATHWAYS (THEORY & CODING)
+     ========================================================================== -->
+<div class="row g-4 mb-5">
+    <div class="col-12 text-center mb-2">
+        <span class="badge bg-primary-subtle text-primary border border-primary px-3 py-1 mb-2">Assessment Engines</span>
+        <h2 class="fw-bold text-light">Choose Your Testing Arena</h2>
+        <p class="text-secondary">Two specialized evaluation environments, one consolidated transcript.</p>
+    </div>
+
+    <!-- Arena 1: Theoretical MCQ Engine -->
+    <div class="col-md-6">
+        <div class="card bg-glass text-light h-100 p-4 card-hover-lift">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="sb-logo-mark" style="background: var(--sb-gradient-cyan); box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);">
+                    <i class="bi bi-patch-question-fill text-white"></i>
+                </div>
+                <span class="badge bg-info-subtle text-info border border-info">Theoretical Track</span>
+            </div>
+            <h4 class="fw-bold text-light mb-2">MCQ Conceptual Engine</h4>
+            <p class="text-secondary small mb-3">
+                Rigorous multiple-choice evaluations across fundamental academic disciplines. Server-authoritative countdown timers ensure zero client cheating and deliver immediate rationalized explanations.
+            </p>
+            <div class="d-flex flex-wrap gap-2 mb-4">
+                <span class="badge bg-surface text-secondary border border-secondary border-opacity-25"><i class="bi bi-globe me-1"></i>General Knowledge</span>
+                <span class="badge bg-surface text-secondary border border-secondary border-opacity-25"><i class="bi bi-book me-1"></i>English</span>
+                <span class="badge bg-surface text-secondary border border-secondary border-opacity-25"><i class="bi bi-calculator me-1"></i>Mathematics</span>
+            </div>
+            <div class="mt-auto pt-3 border-top border-secondary border-opacity-10 d-flex align-items-center justify-content-between">
+                <span class="text-muted small"><i class="bi bi-clock-history me-1"></i>30s per question</span>
+                <a href="/assessments/mcq/setup/" class="btn btn-outline-info btn-sm">
+                    Enter MCQ Arena <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Arena 2: Live In-Browser Coding Arena -->
+    <div class="col-md-6">
+        <div class="card bg-glass text-light h-100 p-4 card-hover-lift">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="sb-logo-mark" style="background: var(--sb-gradient-primary); box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);">
+                    <i class="bi bi-terminal-fill text-white"></i>
+                </div>
+                <span class="badge bg-primary-subtle text-primary border border-primary">Practical Track</span>
+            </div>
+            <h4 class="fw-bold text-light mb-2">Live Coding Arena</h4>
+            <p class="text-secondary small mb-3">
+                Complete engineering challenges in Microsoft Monaco Editor. Test your algorithmic thinking against public sample test suites, then submit to isolated sandboxes with strict cgroups memory ceilings.
+            </p>
+            <div class="d-flex flex-wrap gap-2 mb-4">
+                <span class="badge bg-surface text-secondary border border-secondary border-opacity-25"><i class="bi bi-filetype-py me-1"></i>Python 3</span>
+                <span class="badge bg-surface text-secondary border border-secondary border-opacity-25"><i class="bi bi-filetype-java me-1"></i>Java (OpenJDK)</span>
+                <span class="badge bg-surface text-secondary border border-secondary border-opacity-25"><i class="bi bi-file-earmark-code me-1"></i>C++ (GCC)</span>
+                <span class="badge bg-surface text-secondary border border-secondary border-opacity-25"><i class="bi bi-diagram-3 me-1"></i>DSA</span>
+            </div>
+            <div class="mt-auto pt-3 border-top border-secondary border-opacity-10 d-flex align-items-center justify-content-between">
+                <span class="text-muted small"><i class="bi bi-cpu me-1"></i>Monaco Desktop IDE</span>
+                <a href="/assessments/coding/setup/" class="btn btn-primary btn-sm">
+                    Enter Coding Arena <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==========================================================================
+     UNIFIED GAMIFICATION & SKILL TIERS SHOWCASE
+     ========================================================================== -->
+<div class="card bg-glass text-light p-4 p-md-5 mb-5 shadow-lg">
+    <div class="row align-items-center g-4">
+        <div class="col-lg-5">
+            <span class="badge bg-warning-subtle text-warning border border-warning px-3 py-1 mb-2">Mathematical Scoring</span>
+            <h3 class="fw-bold text-light mb-2">Anti-Farming Mastery Engine</h3>
+            <p class="text-secondary small mb-4">
+                Unlike simple platforms that reward repeating easy challenges, SkillByte implements a <strong>Best Score per Unique Question</strong> model. Your ranking reflects genuine breadth of technical ability.
+            </p>
+            <div class="d-flex align-items-center gap-3">
+                <a href="/leaderboard/" class="btn btn-outline-warning btn-sm">
+                    <i class="bi bi-trophy-fill me-1"></i>View Global Leaderboard
+                </a>
+                <a href="/dashboard/" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-speedometer2 me-1"></i>Check My Tier
+                </a>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="row g-3">
+                <!-- Tier 1: Novice -->
+                <div class="col-sm-6">
+                    <div class="p-3 bg-surface rounded-3 border border-secondary border-opacity-25">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <span class="fw-bold text-light">Novice</span>
+                            <span class="badge bg-secondary">0 – 49 pts</span>
+                        </div>
+                        <div class="text-muted small">Fundamental syntax & core comprehension.</div>
+                        <div class="progress mt-2" style="height: 5px;">
+                            <div class="progress-bar bg-secondary" style="width: 25%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tier 2: Apprentice -->
+                <div class="col-sm-6">
+                    <div class="p-3 bg-surface rounded-3 border border-secondary border-opacity-25">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <span class="fw-bold text-info">Apprentice</span>
+                            <span class="badge bg-info-subtle text-info">50 – 149 pts</span>
+                        </div>
+                        <div class="text-muted small">Intermediate logic & algorithm design.</div>
+                        <div class="progress mt-2" style="height: 5px;">
+                            <div class="progress-bar bg-info" style="width: 50%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tier 3: Specialist -->
+                <div class="col-sm-6">
+                    <div class="p-3 bg-surface rounded-3 border border-secondary border-opacity-25">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <span class="fw-bold text-primary">Specialist</span>
+                            <span class="badge bg-primary-subtle text-primary">150 – 299 pts</span>
+                        </div>
+                        <div class="text-muted small">Complex data structures & high speed.</div>
+                        <div class="progress mt-2" style="height: 5px;">
+                            <div class="progress-bar bg-primary" style="width: 75%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tier 4: Master -->
+                <div class="col-sm-6">
+                    <div class="p-3 bg-surface rounded-3 border border-warning border-opacity-50">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <span class="fw-bold text-warning"><i class="bi bi-crown-fill me-1"></i>Master</span>
+                            <span class="badge bg-warning-subtle text-warning">300+ pts</span>
+                        </div>
+                        <div class="text-muted small">Flawless execution & theoretical perfection.</div>
+                        <div class="progress mt-2" style="height: 5px;">
+                            <div class="progress-bar bg-warning" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==========================================================================
+     SYSTEM READINESS ACCORDION DRAWER
+     ========================================================================== -->
+<div class="card bg-glass text-light mb-4">
+    <div class="card-body p-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge-pulse-emerald py-1 px-2"><span class="pulse-dot"></span> Kernel Active</span>
+            <span class="text-secondary small">Django 5.2 &bull; PostgreSQL 18 &bull; Judge0 Docker Microservice</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="text-muted small font-monospace" id="health-live-response">API Status: Online (200 OK)</span>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
+{% block extra_js %}
+<script>
+// Interactive Hero Live Code Simulator
+function simulateHeroCodeRun() {
+    const status = document.getElementById('hero-ide-status');
+    const btn = document.getElementById('hero-run-btn');
+    if (!status || !btn) return;
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span>Evaluating...';
+    status.innerHTML = '<span class="text-warning font-monospace"><i class="bi bi-hourglass-split me-1"></i>Executing inside isolated sandbox...</span>';
+
+    setTimeout(() => {
+        status.innerHTML = '<span class="text-success font-monospace fw-bold"><i class="bi bi-check2-all me-1"></i>All 3 Test Cases Passed! [100% Accepted, 14ms]</span>';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-play-fill me-1"></i>Run Diagnostics';
+    }, 900);
+}
+
+// Interactive Hero MCQ Teaser
+function testHeroMCQ(button, isCorrect) {
+    const feedback = document.getElementById('hero-mcq-feedback');
+    const container = document.getElementById('hero-mcq-options');
+    if (!feedback || !container) return;
+
+    // Reset buttons
+    container.querySelectorAll('button').forEach(btn => {
+        btn.classList.remove('btn-success', 'btn-danger');
+        btn.classList.add('btn-outline-light');
+    });
+
+    feedback.classList.remove('d-none', 'text-success', 'text-danger');
+
+    if (isCorrect) {
+        button.classList.remove('btn-outline-light');
+        button.classList.add('btn-success');
+        feedback.classList.add('text-success');
+        feedback.innerHTML = '<i class="bi bi-check-circle-fill me-1"></i><strong>Brilliant!</strong> Balanced AVL trees strictly guarantee O(log n) height balance.';
+    } else {
+        button.classList.remove('btn-outline-light');
+        button.classList.add('btn-danger');
+        feedback.classList.add('text-danger');
+        feedback.innerHTML = '<i class="bi bi-x-circle-fill me-1"></i><strong>Incorrect!</strong> Remember that self-balancing trees avoid degenerate O(n) worst cases.';
+    }
+}
+</script>
+{% endblock %}

@@ -1,54 +1,82 @@
 {% extends 'base.html' %}
 
-{% block title %}Login — SKILLBYTE{% endblock %}
+{% block title %}Sign In — SKILLBYTE{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-        <div class="card shadow-lg border-0 bg-glass text-light">
-            <div class="card-body p-4 p-md-5">
-                <div class="text-center mb-4">
-                    <span class="badge bg-primary px-3 py-1 mb-2">Student & Admin Portal</span>
-                    <h2 class="fw-bold mb-1">Welcome Back</h2>
-                    <p class="text-secondary small">Sign in to your SkillByte account</p>
-                </div>
-
-                <!-- Error Alert -->
-                <div id="login-error-alert" class="alert alert-danger d-none small py-2 px-3 mb-3" role="alert"></div>
-
-                <!-- Success Alert -->
-                <div id="login-success-alert" class="alert alert-success d-none small py-2 px-3 mb-3" role="alert"></div>
-
-                <form id="login-form" novalidate>
-                    <div class="mb-3">
-                        <label for="login-email" class="form-label small text-secondary">Email Address</label>
-                        <input type="email" class="form-control bg-darker text-light border-secondary border-opacity-50" id="login-email" placeholder="student@example.com" required autocomplete="email">
-                        <div class="invalid-feedback small">Please enter a valid email address.</div>
+<div class="row justify-content-center py-4">
+    <div class="col-md-7 col-lg-5 col-xl-4">
+        <!-- Floating Ambient Glow Behind Card -->
+        <div class="position-relative">
+            <div class="card shadow-lg border-0 bg-glass text-light p-3 p-sm-4 card-hover-lift">
+                <div class="card-body p-2 p-sm-3">
+                    <!-- Brand Header -->
+                    <div class="text-center mb-4">
+                        <div class="sb-logo-mark mx-auto mb-3" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                            <i class="bi bi-cpu-fill"></i>
+                        </div>
+                        <h2 class="fw-bold mb-1 text-light">Welcome Back</h2>
+                        <p class="text-secondary small mb-0">Sign in to your SkillByte candidate or admin account</p>
                     </div>
 
-                    <div class="mb-4">
-                        <label for="login-password" class="form-label small text-secondary">Password</label>
-                        <input type="password" class="form-control bg-darker text-light border-secondary border-opacity-50" id="login-password" placeholder="••••••••" required autocomplete="current-password">
-                        <div class="invalid-feedback small">Password is required.</div>
+                    <!-- One-Click Quick Fill Credentials for Examiners / Students -->
+                    <div class="mb-4 p-2_5 bg-surface rounded-3 border border-secondary border-opacity-25">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="text-secondary small fw-semibold"><i class="bi bi-key-fill text-warning me-1"></i>Quick-Test Credentials:</span>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-outline-info btn-sm flex-fill py-1 px-2 small font-monospace" onclick="fillCredentials('student@skillbyte.edu', 'Student@123456')">
+                                <i class="bi bi-person-fill me-1"></i>Student
+                            </button>
+                            <button type="button" class="btn btn-outline-warning btn-sm flex-fill py-1 px-2 small font-monospace" onclick="fillCredentials('admin@skillbyte.edu', 'Admin@123456')">
+                                <i class="bi bi-shield-lock-fill me-1"></i>Admin
+                            </button>
+                        </div>
                     </div>
 
-                    <button type="submit" id="login-submit-btn" class="btn btn-primary w-100 py-2 fw-semibold d-flex align-items-center justify-content-center gap-2">
-                        <span id="login-spinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                        <span id="login-btn-text">Sign In</span>
-                    </button>
-                </form>
+                    <!-- Error Alert -->
+                    <div id="login-error-alert" class="alert alert-danger d-none small py-2 px-3 mb-3 border-danger border-opacity-50" role="alert"></div>
 
-                <hr class="border-secondary opacity-25 my-4">
+                    <!-- Success Alert -->
+                    <div id="login-success-alert" class="alert alert-success d-none small py-2 px-3 mb-3 border-success border-opacity-50" role="alert"></div>
 
-                <div class="d-flex flex-column gap-2 text-center small text-secondary">
-                    <div>
-                        Don't have an account? <a href="/register/" class="text-primary text-decoration-none fw-medium">Register as Student</a>
-                    </div>
-                    <div>
-                        Or explore without an account:
-                        <button class="btn btn-link text-warning p-0 small fw-medium" onclick="Auth.setGuestMode(); window.location.href='/dashboard/';">
-                            Continue as Guest
+                    <form id="login-form" novalidate>
+                        <div class="mb-3">
+                            <label for="login-email" class="form-label small text-secondary fw-medium">
+                                <i class="bi bi-envelope me-1"></i>Email Address
+                            </label>
+                            <input type="email" class="form-control" id="login-email" placeholder="student@skillbyte.edu" required autocomplete="email">
+                            <div class="invalid-feedback small">Please enter a valid email address.</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label for="login-password" class="form-label small text-secondary fw-medium mb-0">
+                                    <i class="bi bi-lock me-1"></i>Password
+                                </label>
+                            </div>
+                            <input type="password" class="form-control" id="login-password" placeholder="••••••••" required autocomplete="current-password">
+                            <div class="invalid-feedback small">Password is required.</div>
+                        </div>
+
+                        <button type="submit" id="login-submit-btn" class="btn btn-primary w-100 py-2_5 fw-semibold d-flex align-items-center justify-content-center gap-2 shadow-sm">
+                            <span id="login-spinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                            <span id="login-btn-text"><i class="bi bi-box-arrow-in-right me-1"></i>Sign In</span>
                         </button>
+                    </form>
+
+                    <div class="my-4 d-flex align-items-center">
+                        <hr class="flex-grow-1 border-secondary opacity-25 my-0">
+                        <span class="px-3 text-muted small">or</span>
+                        <hr class="flex-grow-1 border-secondary opacity-25 my-0">
+                    </div>
+
+                    <div class="d-flex flex-column gap-2 text-center small text-secondary">
+                        <button class="btn btn-outline-warning w-100 py-2 small" onclick="Auth.setGuestMode(); window.location.href='/dashboard/';">
+                            <i class="bi bi-lightning-charge me-1"></i>Continue Without Account (Guest)
+                        </button>
+                        <div class="pt-2">
+                            New here? <a href="/register/" class="text-primary text-decoration-none fw-semibold">Create Free Account</a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -59,6 +87,18 @@
 
 {% block extra_js %}
 <script>
+function fillCredentials(email, password) {
+    document.getElementById('login-email').value = email;
+    document.getElementById('login-password').value = password;
+    const btn = document.getElementById('login-submit-btn');
+    btn.classList.add('btn-success');
+    btn.classList.remove('btn-primary');
+    setTimeout(() => {
+        btn.classList.add('btn-primary');
+        btn.classList.remove('btn-success');
+    }, 400);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     // Check if redirected due to session expiration
     const urlParams = new URLSearchParams(window.location.search);
@@ -85,7 +125,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const email = emailInput.value.trim();
         const password = passwordInput.value;
 
-        // Basic client validation
         let valid = true;
         if (!email || !email.includes('@')) {
             emailInput.classList.add('is-invalid');
@@ -103,7 +142,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!valid) return;
 
-        // Show loading state
         submitBtn.disabled = true;
         spinner.classList.remove('d-none');
         btnText.textContent = "Authenticating...";
@@ -123,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 successAlert.classList.remove('d-none');
                 setTimeout(() => {
                     window.location.href = '/dashboard/';
-                }, 700);
+                }, 600);
             } else {
                 let msg = "Login failed. Please check your credentials.";
                 if (data.non_field_errors) {
@@ -142,10 +180,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } finally {
             submitBtn.disabled = false;
             spinner.classList.add('d-none');
-            btnText.textContent = "Sign In";
+            btnText.innerHTML = '<i class="bi bi-box-arrow-in-right me-1"></i>Sign In';
         }
     });
 });
 </script>
 {% endblock %}
-

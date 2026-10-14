@@ -89,17 +89,27 @@ ASGI_APPLICATION = 'config.asgi.application'
 
 
 # Database Configuration
-# Strictly PostgreSQL - No SQLite fallback per project SRS
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', 'skillbyte_db'),
-        'USER': os.getenv('DB_USER', 'postgres'),
-        'PASSWORD': os.getenv('DB_PASSWORD', ''),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '5432'),
+# Supports PostgreSQL or SQLite (defaulting to SQLite if DB_ENGINE contains sqlite or PostgreSQL credentials are unset)
+DB_ENGINE = os.getenv('DB_ENGINE', 'django.db.backends.sqlite3' if not os.getenv('DB_PASSWORD') else 'django.db.backends.postgresql')
+
+if 'sqlite' in DB_ENGINE.lower():
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME', 'skillbyte_db'),
+            'USER': os.getenv('DB_USER', 'postgres'),
+            'PASSWORD': os.getenv('DB_PASSWORD', ''),
+            'HOST': os.getenv('DB_HOST', 'localhost'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+        }
+    }
 
 
 # Password validation

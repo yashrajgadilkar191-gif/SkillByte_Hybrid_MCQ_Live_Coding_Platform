@@ -118,14 +118,17 @@
             </div>
 
             <!-- Monaco Editor Container -->
-            <div class="position-relative flex-grow-1" style="min-height: 500px;">
+            <div class="position-relative flex-grow-1" style="min-height: 420px;">
                 <div id="monaco-editor-loading" class="position-absolute w-100 h-100 align-items-center justify-content-center bg-dark text-secondary z-3" style="top: 0; left: 0; display: flex;">
                     <div class="text-center" id="monaco-loading-content">
-                        <div class="spinner-border text-primary mb-2" role="status" id="monaco-spinner"></div>
-                        <div id="monaco-loading-status-text">Initializing Monaco Editor...</div>
+                        <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status" id="monaco-spinner"></div>
+                            <span class="sb-1001-tag font-monospace">1001</span>
+                        </div>
+                        <div id="monaco-loading-status-text" class="small">Initializing Monaco Editor...</div>
                     </div>
                 </div>
-                <div id="monaco-editor-container" style="height: 560px; min-height: 480px; width: 100%;"></div>
+                <div id="monaco-editor-container" style="height: 470px; min-height: 400px; width: 100%;"></div>
             </div>
 
             <!-- Action Bar -->
@@ -163,8 +166,11 @@
             </div>
             <div class="modal-body p-3">
                 <!-- Loading State -->
-                <div id="run-loading" class="text-center py-4 d-none">
-                    <div class="spinner-border text-info mb-2" role="status"></div>
+                <div id="run-loading" class="text-center py-3 d-none">
+                    <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
+                        <div class="spinner-border spinner-border-sm text-info" role="status"></div>
+                        <span class="sb-1001-tag font-monospace">1001</span>
+                    </div>
                     <div class="text-secondary small">Executing code against sample test cases via Judge0...</div>
                 </div>
 

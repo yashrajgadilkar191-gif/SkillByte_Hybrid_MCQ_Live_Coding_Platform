@@ -1,89 +1,605 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}SKILLBYTE — Where Theory Meets Practice{% endblock %}
+{% block title %}SkillByte — Interactive Learning & Code Assessment Platform{% endblock %}
 
-{% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-10">
-        <!-- Hero Card -->
-        <div class="card shadow-lg border-0 bg-glass text-light mb-4">
-            <div class="card-body p-5">
-                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
-                    <div>
-                        <span class="badge bg-primary-subtle text-primary border border-primary px-3 py-1 mb-2">SkillByte v1.0.0 — Final Release</span>
-                        <h1 class="display-5 fw-bold mb-1">SKILLBYTE</h1>
-                        <p class="lead text-secondary mb-0">"Where Theory Meets Practice"</p>
-                    </div>
-                    <div class="text-end">
-                        <span class="badge bg-success-subtle text-success fs-6 px-3 py-2 border border-success">
-                            ✓ Production Ready
-                        </span>
-                    </div>
+{% block main_padding %}py-0{% endblock %}
+
+{% block full_content %}
+<!-- =========================================================================
+     HERO SECTION
+     ========================================================================= -->
+<section class="hero-learning-section text-light py-5 py-lg-6 position-relative">
+    <div class="hero-grid-pattern"></div>
+    <div class="hero-glow-blob hero-glow-1"></div>
+    <div class="hero-glow-blob hero-glow-2"></div>
+
+    <div class="container position-relative py-4 py-lg-5">
+        <div class="row align-items-center g-5">
+            <!-- Left Column: Copy & Calls to Action -->
+            <div class="col-lg-6 text-start">
+                <div class="mb-3">
+                    <span class="badge-learning-pill shadow-sm">
+                        <i class="bi bi-stars text-warning"></i>
+                        <span>Interactive Learning & Assessment Engine</span>
+                    </span>
                 </div>
 
-                <p class="text-light-50 fs-5 mb-4">
-                    SkillByte is a hybrid assessment platform bridging theoretical MCQ evaluations and live code executions into a single, unified environment.
+                <h1 class="display-4 fw-extrabold lh-tight text-white mb-3" style="font-family: 'Plus Jakarta Sans', sans-serif;">
+                    Master Coding & Theory. <br>
+                    <span class="text-gradient-primary">Build Real Competence.</span>
+                </h1>
+
+                <p class="lead text-light-50 mb-4 fs-5" style="max-width: 540px;">
+                    SkillByte unites in-depth theoretical aptitude with live, in-browser coding practice. Solve challenges in Python, Java, and C++, benchmark your mastery with real-time test cases, and climb verified skill tiers.
                 </p>
 
-                <!-- Quick Action Buttons -->
+                <!-- Action Button Group -->
                 <div class="d-flex align-items-center flex-wrap gap-3 mb-4">
-                    <a href="/register/" class="btn btn-primary px-4 py-2 fw-semibold">Register as Student</a>
-                    <a href="/login/" class="btn btn-outline-light px-4 py-2">Sign In</a>
-                    <button class="btn btn-outline-warning px-4 py-2" onclick="Auth.setGuestMode(); window.location.href='/dashboard/';">Continue as Guest</button>
+                    <a href="/register/" class="btn btn-glow-primary btn-lg px-4 py-3 fw-semibold d-inline-flex align-items-center gap-2">
+                        <span>Start Learning Free</span>
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                    <a href="/coding/" class="btn btn-outline-light btn-lg px-4 py-3 fw-medium d-inline-flex align-items-center gap-2">
+                        <i class="bi bi-code-slash text-primary-accent"></i>
+                        <span>Live Coding</span>
+                    </a>
+                    <button class="btn btn-outline-warning btn-lg px-3 py-3 fw-medium" onclick="Auth.setGuestMode(); window.location.href='/dashboard/';">
+                        <i class="bi bi-person-bounding-box me-1"></i> Try as Guest
+                    </button>
                 </div>
 
-                <hr class="border-secondary opacity-25 my-4">
+                <!-- Trust Points -->
+                <div class="d-flex align-items-center flex-wrap gap-4 text-secondary small pt-2 border-top border-secondary border-opacity-25">
+                    <div class="d-flex align-items-center gap-2 text-light">
+                        <i class="bi bi-patch-check-fill text-primary"></i>
+                        <span>Monaco VS Code IDE</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 text-light">
+                        <i class="bi bi-lightning-charge-fill text-warning"></i>
+                        <span>Instant Compiler Evaluation</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 text-light">
+                        <i class="bi bi-shield-check text-success"></i>
+                        <span>Anti-Farming Mastery Scoring</span>
+                    </div>
+                </div>
+            </div>
 
-                <!-- System Readiness & Health Checker Card -->
-                <div class="row g-4">
-                    <div class="col-md-6">
-                        <div class="card bg-surface border border-secondary border-opacity-25 h-100">
-                            <div class="card-body">
-                                <h5 class="card-title text-primary fw-semibold mb-3">Core Platform Status</h5>
-                                <ul class="list-unstyled mb-0 d-flex flex-column gap-2 text-secondary small">
-                                    <li class="d-flex justify-content-between align-items-center">
-                                        <span>Backend Framework:</span>
-                                        <span class="text-light fw-medium">Django 5.2 (REST Framework)</span>
-                                    </li>
-                                    <li class="d-flex justify-content-between align-items-center">
-                                        <span>Authentication:</span>
-                                        <span class="text-success fw-medium">JWT (Access + Refresh + Blacklist)</span>
-                                    </li>
-                                    <li class="d-flex justify-content-between align-items-center">
-                                        <span>User Roles:</span>
-                                        <span class="text-light fw-medium">STUDENT, ADMIN, GUEST</span>
-                                    </li>
-                                    <li class="d-flex justify-content-between align-items-center">
-                                        <span>Primary Database:</span>
-                                        <span class="text-light fw-medium">PostgreSQL (Django ORM)</span>
-                                    </li>
-                                </ul>
+            <!-- Right Column: Interactive Code & Result Preview Window -->
+            <div class="col-lg-6 position-relative">
+                <div class="editor-window-mockup shadow-lg">
+                    <!-- Window Top Bar -->
+                    <div class="d-flex align-items-center justify-content-between px-3 py-2 bg-darker border-bottom border-secondary border-opacity-25">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="window-dots">
+                                <span class="window-dot window-dot-red"></span>
+                                <span class="window-dot window-dot-yellow"></span>
+                                <span class="window-dot window-dot-green"></span>
                             </div>
+                            <span class="small text-muted font-monospace"><i class="bi bi-terminal me-1"></i>skillbyte-ide</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-success-subtle text-success border border-success small py-1 px-2">
+                                <i class="bi bi-check2-circle me-1"></i>Compiler Ready
+                            </span>
                         </div>
                     </div>
 
-                    <div class="col-md-6">
-                        <div class="card bg-surface border border-secondary border-opacity-25 h-100">
-                            <div class="card-body">
-                                <h5 class="card-title text-primary fw-semibold mb-3">Health Check API</h5>
-                                <div class="p-3 bg-darker rounded border border-secondary border-opacity-25 mb-3 font-monospace small">
-                                    <span class="text-info">GET</span> <a href="/api/health/" target="_blank" class="text-light text-decoration-none">/api/health/</a>
-                                </div>
-                                <div id="health-live-response" class="p-3 bg-darker rounded border border-secondary border-opacity-25 font-monospace small text-muted">
-                                    Connecting to API...
-                                </div>
+                    <!-- File Tabs -->
+                    <div class="d-flex align-items-center bg-darker border-bottom border-secondary border-opacity-25 small">
+                        <div class="editor-tab-active d-flex align-items-center gap-2">
+                            <i class="bi bi-filetype-py text-info"></i>
+                            <span>two_sum.py</span>
+                        </div>
+                        <div class="editor-tab-inactive d-flex align-items-center gap-2">
+                            <i class="bi bi-filetype-java text-danger"></i>
+                            <span>Solution.java</span>
+                        </div>
+                        <div class="editor-tab-inactive d-flex align-items-center gap-2">
+                            <i class="bi bi-filetype-cpp text-primary"></i>
+                            <span>solution.cpp</span>
+                        </div>
+                    </div>
+
+                    <!-- Code Body -->
+                    <div class="p-3 bg-dark" style="background-color: #0d1117 !important;">
+                        <div class="code-line"><span class="code-num">1</span><span><span class="syn-kw">def</span> <span class="syn-fn">two_sum</span>(nums: list[int], target: int) -&gt; list[int]:</span></div>
+                        <div class="code-line"><span class="code-num">2</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="syn-com"># Hash map for O(n) algorithmic lookup</span></span></div>
+                        <div class="code-line"><span class="code-num">3</span><span>&nbsp;&nbsp;&nbsp;&nbsp;seen = {}</span></div>
+                        <div class="code-line"><span class="code-num">4</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="syn-kw">for</span> i, num <span class="syn-kw">in</span> enumerate(nums):</span></div>
+                        <div class="code-line"><span class="code-num">5</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;diff = target - num</span></div>
+                        <div class="code-line"><span class="code-num">6</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="syn-kw">if</span> diff <span class="syn-kw">in</span> seen:</span></div>
+                        <div class="code-line"><span class="code-num">7</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="syn-kw">return</span> [seen[diff], i]</span></div>
+                        <div class="code-line"><span class="code-num">8</span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;seen[num] = i</span></div>
+                        <div class="code-line"><span class="code-num">9</span><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="syn-kw">return</span> []</span></div>
+                    </div>
+
+                    <!-- Live Test Output Console -->
+                    <div class="p-3 border-top border-secondary border-opacity-25" style="background-color: #161b22;">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="d-flex align-items-center gap-2 small">
+                                <span class="badge bg-success text-white fw-bold"><i class="bi bi-check-lg me-1"></i>ACCEPTED</span>
+                                <span class="text-light-50 small font-monospace">Execution: <strong>14ms</strong> &bull; Memory: <strong>14.2 MB</strong></span>
                             </div>
+                            <span class="badge bg-primary text-white font-monospace">+20 Mastery Pts</span>
+                        </div>
+                        <div class="p-2 rounded font-monospace small" style="background-color: #0d1117; color: #7ee787; border: 1px solid #30363d;">
+                            <div>&check; Case 1: nums=[2,7,11,15], target=9 &rarr; [0, 1] (Passed)</div>
+                            <div>&check; Case 2: nums=[3,2,4], target=6 &rarr; [1, 2] (Passed)</div>
+                            <div>&check; Case 3: nums=[3,3], target=6 &rarr; [0, 1] (Passed)</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="mt-4 p-3 bg-darker rounded border border-secondary border-opacity-25 d-flex align-items-center justify-content-between flex-wrap gap-2 text-secondary small">
-                    <span>Platform Status: <strong>SkillByte v1.0.0</strong> <span class="badge bg-success ms-1">Final Release</span></span>
-                    <span>Architecture: <em>Hybrid MCQ & Live Coding Assessment Platform</em></span>
+                <!-- Floating Achievement Badge -->
+                <div class="floating-achievement-badge position-absolute d-none d-md-flex align-items-center gap-3" style="bottom: -24px; left: -20px; z-index: 10;">
+                    <div class="rounded-circle bg-warning text-dark d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                        <i class="bi bi-trophy-fill fs-5"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold small text-white">Skill Tier: Specialist</div>
+                        <div class="text-white-50" style="font-size: 0.78rem;">Ranked in Top 10% Platform Learners</div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-{% endblock %}
+</section>
 
+<!-- =========================================================================
+     PLATFORM STATS STRIP
+     ========================================================================= -->
+<section class="py-4 bg-white border-bottom border-light-subtle shadow-sm">
+    <div class="container">
+        <div class="row g-4 text-center">
+            <div class="col-6 col-md-3">
+                <div class="py-2 border-end-md">
+                    <div class="display-6 fw-bold text-primary mb-1" style="font-family: 'Plus Jakarta Sans', sans-serif;">4+</div>
+                    <div class="text-secondary small fw-medium">Programming Tracks (Python, Java, C++, DSA)</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="py-2 border-end-md">
+                    <div class="display-6 fw-bold text-info mb-1" style="font-family: 'Plus Jakarta Sans', sans-serif;">3+</div>
+                    <div class="text-secondary small fw-medium">Aptitude & Theoretical Quizzes</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="py-2 border-end-md">
+                    <div class="display-6 fw-bold text-success mb-1" style="font-family: 'Plus Jakarta Sans', sans-serif;">100%</div>
+                    <div class="text-secondary small fw-medium">Sandboxed Automated Code Testing</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="py-2">
+                    <div class="display-6 fw-bold text-warning mb-1" style="font-family: 'Plus Jakarta Sans', sans-serif;">4 Tiers</div>
+                    <div class="text-secondary small fw-medium">Novice to Master Progression</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- =========================================================================
+     LEARNING TRACKS & CURRICULUM SECTION
+     ========================================================================= -->
+<section class="py-5 py-lg-6" style="background-color: var(--sb-bg-page);">
+    <div class="container py-4">
+        <!-- Section Header -->
+        <div class="text-center mb-5" style="max-width: 680px; margin: 0 auto;">
+            <span class="badge bg-primary-subtle text-primary border border-primary px-3 py-1 mb-2 fw-semibold">
+                Explore Curriculum
+            </span>
+            <h2 class="display-6 fw-bold mb-3" style="font-family: 'Plus Jakarta Sans', sans-serif;">
+                Structured Learning Pathways
+            </h2>
+            <p class="text-secondary fs-6 mb-0">
+                Choose a track tailored to your career goals. Advance from syntax fundamentals to sophisticated algorithmic problem solving and theoretical aptitude.
+            </p>
+        </div>
+
+        <!-- Track Cards Grid -->
+        <div class="row g-4">
+            <!-- Track 1: Python -->
+            <div class="col-md-6 col-lg-4">
+                <div class="track-card h-100 p-4 d-flex flex-column">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="icon-box-lg icon-box-python">
+                            <i class="bi bi-filetype-py"></i>
+                        </div>
+                        <span class="badge bg-info-subtle text-info border border-info small">Coding Track</span>
+                    </div>
+                    <h5 class="fw-bold mb-2">Python 3 Programming</h5>
+                    <p class="text-secondary small mb-4 flex-grow-1">
+                        Master Pythonic syntax, list comprehensions, functional primitives, dictionaries, and string manipulation with instant automated grading.
+                    </p>
+                    <div class="d-flex align-items-center justify-content-between pt-3 border-top border-light-subtle">
+                        <span class="small text-muted"><i class="bi bi-code me-1"></i>Multi-level Problems</span>
+                        <a href="/coding/" class="btn btn-outline-primary btn-sm px-3 fw-semibold">
+                            Start Practicing &rarr;
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Track 2: Java -->
+            <div class="col-md-6 col-lg-4">
+                <div class="track-card h-100 p-4 d-flex flex-column">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="icon-box-lg icon-box-java">
+                            <i class="bi bi-filetype-java"></i>
+                        </div>
+                        <span class="badge bg-danger-subtle text-danger border border-danger small">Coding Track</span>
+                    </div>
+                    <h5 class="fw-bold mb-2">Java OOP & Foundations</h5>
+                    <p class="text-secondary small mb-4 flex-grow-1">
+                        Solidify object-oriented programming, standard Java Collections framework, memory model awareness, and robust algorithmic execution.
+                    </p>
+                    <div class="d-flex align-items-center justify-content-between pt-3 border-top border-light-subtle">
+                        <span class="small text-muted"><i class="bi bi-code me-1"></i>OpenJDK Sandbox</span>
+                        <a href="/coding/" class="btn btn-outline-danger btn-sm px-3 fw-semibold">
+                            Start Practicing &rarr;
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Track 3: C++ -->
+            <div class="col-md-6 col-lg-4">
+                <div class="track-card h-100 p-4 d-flex flex-column">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="icon-box-lg icon-box-cpp">
+                            <i class="bi bi-filetype-cpp"></i>
+                        </div>
+                        <span class="badge bg-primary-subtle text-primary border border-primary small">Coding Track</span>
+                    </div>
+                    <h5 class="fw-bold mb-2">C++ High Performance</h5>
+                    <p class="text-secondary small mb-4 flex-grow-1">
+                        Learn pointer manipulation, standard template library (STL), fast input/output techniques, and competitive programming memory optimizations.
+                    </p>
+                    <div class="d-flex align-items-center justify-content-between pt-3 border-top border-light-subtle">
+                        <span class="small text-muted"><i class="bi bi-code me-1"></i>GCC Environment</span>
+                        <a href="/coding/" class="btn btn-outline-primary btn-sm px-3 fw-semibold">
+                            Start Practicing &rarr;
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Track 4: Data Structures & Algorithms -->
+            <div class="col-md-6 col-lg-4">
+                <div class="track-card h-100 p-4 d-flex flex-column">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="icon-box-lg icon-box-dsa">
+                            <i class="bi bi-diagram-3"></i>
+                        </div>
+                        <span class="badge bg-warning-subtle text-warning border border-warning small">Core Skills</span>
+                    </div>
+                    <h5 class="fw-bold mb-2">Data Structures & Algorithms</h5>
+                    <p class="text-secondary small mb-4 flex-grow-1">
+                        Tackle arrays, strings, two pointers, binary trees, graphs, sorting, and dynamic programming patterns tested in technical interviews.
+                    </p>
+                    <div class="d-flex align-items-center justify-content-between pt-3 border-top border-light-subtle">
+                        <span class="small text-muted"><i class="bi bi-cpu me-1"></i>Interview Ready</span>
+                        <a href="/coding/" class="btn btn-outline-warning btn-sm px-3 fw-semibold">
+                            Solve Challenges &rarr;
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Track 5: Quantitative Aptitude -->
+            <div class="col-md-6 col-lg-4">
+                <div class="track-card h-100 p-4 d-flex flex-column">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="icon-box-lg icon-box-math">
+                            <i class="bi bi-calculator"></i>
+                        </div>
+                        <span class="badge bg-success-subtle text-success border border-success small">Theoretical Quiz</span>
+                    </div>
+                    <h5 class="fw-bold mb-2">Quantitative Mathematics</h5>
+                    <p class="text-secondary small mb-4 flex-grow-1">
+                        Hone arithmetic, probability, permutations, discrete reasoning, time-work problems, and speed-math under strict server-validated countdowns.
+                    </p>
+                    <div class="d-flex align-items-center justify-content-between pt-3 border-top border-light-subtle">
+                        <span class="small text-muted"><i class="bi bi-clock me-1"></i>Timed Quizzes</span>
+                        <a href="/assessments/mcq/" class="btn btn-outline-success btn-sm px-3 fw-semibold">
+                            Take Quiz &rarr;
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Track 6: English & Verbal -->
+            <div class="col-md-6 col-lg-4">
+                <div class="track-card h-100 p-4 d-flex flex-column">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="icon-box-lg icon-box-english">
+                            <i class="bi bi-journal-text"></i>
+                        </div>
+                        <span class="badge bg-warning-subtle text-warning border border-warning small">Theoretical Quiz</span>
+                    </div>
+                    <h5 class="fw-bold mb-2">Verbal Ability & English</h5>
+                    <p class="text-secondary small mb-4 flex-grow-1">
+                        Enhance grammatical proficiency, sentence correction, reading comprehension, and vocabulary essential for campus placement screenings.
+                    </p>
+                    <div class="d-flex align-items-center justify-content-between pt-3 border-top border-light-subtle">
+                        <span class="small text-muted"><i class="bi bi-lightbulb me-1"></i>Detailed Explanations</span>
+                        <a href="/assessments/mcq/" class="btn btn-outline-warning btn-sm px-3 fw-semibold">
+                            Take Quiz &rarr;
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- =========================================================================
+     HOW SKILLBYTE ACCELERATES LEARNING (FEATURES)
+     ========================================================================= -->
+<section class="py-5 py-lg-6 bg-white border-top border-bottom border-light-subtle">
+    <div class="container py-4">
+        <div class="row align-items-center g-5 mb-5">
+            <div class="col-lg-6">
+                <span class="badge bg-primary-subtle text-primary border border-primary px-3 py-1 mb-2 fw-semibold">
+                    The Learning Advantage
+                </span>
+                <h2 class="display-6 fw-bold mb-3" style="font-family: 'Plus Jakarta Sans', sans-serif;">
+                    Engineered to Build Deep, Lasting Technical Competence
+                </h2>
+                <p class="text-secondary fs-6 mb-4">
+                    Traditional platforms only provide questions. SkillByte provides a synchronized environment where candidate solutions are evaluated under deterministic limits with immediate educational feedback.
+                </p>
+
+                <div class="d-flex flex-column gap-3">
+                    <div class="d-flex gap-3">
+                        <div class="step-number-circle flex-shrink-0">
+                            <i class="bi bi-code-square"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-1">In-Browser VS Code Monaco Editor</h6>
+                            <p class="text-secondary small mb-0">Full syntax highlighting, bracket matching, tab indentation, and dark/light modes without installing local compilers.</p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-3">
+                        <div class="step-number-circle flex-shrink-0" style="background: linear-gradient(135deg, #10b981, #059669);">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-1">Anti-Farming Mathematical Deduplication</h6>
+                            <p class="text-secondary small mb-0">Our "Best Score per Unique Question" model prevents learners from farming points on easy challenges. True mastery requires breadth.</p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-3">
+                        <div class="step-number-circle flex-shrink-0" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                            <i class="bi bi-speedometer2"></i>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-1">Instant Educational Diagnostic Reviews</h6>
+                            <p class="text-secondary small mb-0">Get question-by-question breakdowns with explanations for wrong answers, compiler execution logs, and runtime tags (TLE, RTE, CE).</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <!-- Skill Tier Progression Card Showcase -->
+                <div class="card shadow-sm border p-4 bg-surface rounded-4">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <h5 class="fw-bold mb-0 text-dark">
+                            <i class="bi bi-award-fill text-warning me-2"></i>Skill Tier Hierarchy
+                        </h5>
+                        <span class="badge bg-primary">Dynamic Progression</span>
+                    </div>
+
+                    <div class="d-flex flex-column gap-3">
+                        <!-- Novice -->
+                        <div class="p-3 rounded-3 border bg-white d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="badge bg-secondary px-3 py-2 fs-6">Novice</span>
+                                <div>
+                                    <div class="fw-semibold small">0 – 49 Points</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">Fundamental concept acquisition & initial problem sets</div>
+                                </div>
+                            </div>
+                            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                        </div>
+
+                        <!-- Apprentice -->
+                        <div class="p-3 rounded-3 border bg-white d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="badge bg-info text-dark px-3 py-2 fs-6">Apprentice</span>
+                                <div>
+                                    <div class="fw-semibold small">50 – 149 Points</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">Consistent practice across MCQ theory and introductory code</div>
+                                </div>
+                            </div>
+                            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                        </div>
+
+                        <!-- Specialist -->
+                        <div class="p-3 rounded-3 border bg-white d-flex align-items-center justify-content-between" style="border-left: 4px solid #2563eb !important;">
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="badge bg-primary px-3 py-2 fs-6">Specialist</span>
+                                <div>
+                                    <div class="fw-semibold small text-primary">150 – 299 Points (Advanced)</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">Proficient in multi-language coding & complex algorithmic cases</div>
+                                </div>
+                            </div>
+                            <span class="badge bg-primary-subtle text-primary border border-primary">High Ranking</span>
+                        </div>
+
+                        <!-- Master -->
+                        <div class="p-3 rounded-3 border bg-white d-flex align-items-center justify-content-between" style="border-left: 4px solid #f59e0b !important;">
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="badge bg-warning text-dark px-3 py-2 fs-6">Master</span>
+                                <div>
+                                    <div class="fw-semibold small text-warning">300+ Points (Top Tier)</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">Platform elite: Complete mastery across theory and practical DSA</div>
+                                </div>
+                            </div>
+                            <i class="bi bi-trophy-fill text-warning fs-5"></i>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top d-flex align-items-center justify-content-between">
+                        <span class="small text-secondary">Ready to test your current tier?</span>
+                        <a href="/leaderboard/" class="btn btn-outline-warning btn-sm fw-semibold">
+                            <i class="bi bi-trophy me-1"></i>View Global Leaderboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- =========================================================================
+     HOW IT WORKS (3 SIMPLE STEPS)
+     ========================================================================= -->
+<section class="py-5 py-lg-6" style="background-color: var(--sb-bg-page);">
+    <div class="container py-4">
+        <div class="text-center mb-5" style="max-width: 600px; margin: 0 auto;">
+            <span class="badge bg-primary-subtle text-primary border border-primary px-3 py-1 mb-2 fw-semibold">
+                Quick Start
+            </span>
+            <h2 class="display-6 fw-bold mb-3" style="font-family: 'Plus Jakarta Sans', sans-serif;">
+                How To Learn with SkillByte
+            </h2>
+            <p class="text-secondary small">
+                Three simple steps from registration to verified algorithmic and theoretical mastery.
+            </p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card border-0 bg-white shadow-sm p-4 h-100 rounded-4 text-center">
+                    <div class="step-number-circle mx-auto mb-3">1</div>
+                    <h5 class="fw-bold mb-2">Select Your Pathway</h5>
+                    <p class="text-secondary small mb-0">
+                        Choose between live coding challenges (Python, Java, C++, DSA) or timed theoretical quizzes (Math, Verbal, CS).
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card border-0 bg-white shadow-sm p-4 h-100 rounded-4 text-center">
+                    <div class="step-number-circle mx-auto mb-3" style="background: linear-gradient(135deg, #10b981, #059669);">2</div>
+                    <h5 class="fw-bold mb-2">Code & Execute Live</h5>
+                    <p class="text-secondary small mb-0">
+                        Write code inside Monaco editor with real-time test cases, or answer multiple-choice questions with server-authoritative timers.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card border-0 bg-white shadow-sm p-4 h-100 rounded-4 text-center">
+                    <div class="step-number-circle mx-auto mb-3" style="background: linear-gradient(135deg, #f59e0b, #d97706);">3</div>
+                    <h5 class="fw-bold mb-2">Track & Advance</h5>
+                    <p class="text-secondary small mb-0">
+                        Analyze instant solution explanations, build your verified mastery score, unlock new skill tiers, and compete on the leaderboard.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- =========================================================================
+     STUDENT TESTIMONIALS / EXPERIENCES
+     ========================================================================= -->
+<section class="py-5 bg-white border-top border-bottom border-light-subtle">
+    <div class="container py-3">
+        <div class="text-center mb-5" style="max-width: 600px; margin: 0 auto;">
+            <h3 class="fw-bold mb-2">Loved by Learners & Candidates</h3>
+            <p class="text-secondary small mb-0">
+                Here is what students say about learning and practicing with SkillByte.
+            </p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="testimonial-card d-flex flex-column justify-content-between">
+                    <p class="text-secondary small fst-italic mb-3">
+                        "The combination of theoretical MCQs and practical Monaco coding in one platform makes campus placement prep seamless. The instant test case diagnostics saved me hours of debugging."
+                    </p>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="student-avatar bg-primary text-white">AR</div>
+                        <div>
+                            <div class="fw-bold small text-dark">Aarav Sharma</div>
+                            <div class="text-muted" style="font-size: 0.75rem;">Computer Science Student &bull; Specialist Tier</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="testimonial-card d-flex flex-column justify-content-between">
+                    <p class="text-secondary small fst-italic mb-3">
+                        "The anti-farming score model is genius. In other sites people just spam easy questions. Here, my score truly reflects the breadth of algorithms and mathematical theory I've mastered."
+                    </p>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="student-avatar bg-success text-white">PK</div>
+                        <div>
+                            <div class="fw-bold small text-dark">Priya Kulkarni</div>
+                            <div class="text-muted" style="font-size: 0.75rem;">Software Engineering Intern &bull; Master Tier</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="testimonial-card d-flex flex-column justify-content-between">
+                    <p class="text-secondary small fst-italic mb-3">
+                        "Being able to jump straight in as a Guest or sign in and review past submission telemetry made daily coding habits easy to maintain. Highly recommended for university labs."
+                    </p>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="student-avatar bg-warning text-dark">RV</div>
+                        <div>
+                            <div class="fw-bold small text-dark">Rohan Verma</div>
+                            <div class="text-muted" style="font-size: 0.75rem;">B.Tech IT Candidate &bull; Apprentice Tier</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- =========================================================================
+     CALL TO ACTION BANNER
+     ========================================================================= -->
+<section class="py-5 py-lg-6" style="background-color: var(--sb-bg-page);">
+    <div class="container py-3">
+        <div class="cta-learning-banner p-4 p-md-5 text-white text-center">
+            <div class="py-4" style="max-width: 680px; margin: 0 auto;">
+                <span class="badge bg-primary px-3 py-2 mb-3 rounded-pill text-uppercase tracking-wider small fw-bold">
+                    Start Your Technical Journey
+                </span>
+                <h2 class="display-6 fw-bold mb-3" style="font-family: 'Plus Jakarta Sans', sans-serif;">
+                    Ready to elevate your code & theoretical knowledge?
+                </h2>
+                <p class="text-light-50 fs-6 mb-4">
+                    Join learners mastering programming problems and theoretical aptitude on SkillByte. Free forever for students and university candidates.
+                </p>
+
+                <div class="d-flex align-items-center justify-content-center flex-wrap gap-3">
+                    <a href="/register/" class="btn btn-glow-primary btn-lg px-4 py-3 fw-semibold">
+                        <i class="bi bi-person-plus-fill me-2"></i>Create Free Account
+                    </a>
+                    <a href="/coding/" class="btn btn-outline-light btn-lg px-4 py-3 fw-medium">
+                        <i class="bi bi-play-circle me-2"></i>Try Coding First
+                    </a>
+                    <button class="btn btn-outline-warning btn-lg px-4 py-3" onclick="Auth.setGuestMode(); window.location.href='/dashboard/';">
+                        Explore as Guest
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

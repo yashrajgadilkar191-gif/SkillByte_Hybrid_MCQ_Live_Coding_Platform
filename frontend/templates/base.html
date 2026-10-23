@@ -9,35 +9,100 @@
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
     <!-- SkillByte Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
+
+    <!-- Immediate theme bootstrap to avoid flicker (Light Mode default) -->
+    <script>
+        (function() {
+            var theme = localStorage.getItem('skillbyte_theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
 
     {% block extra_css %}{% endblock %}
 </head>
 <body class="skillbyte-body">
     <!-- Navigation Bar -->
-    <header>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark-navy shadow-sm py-3">
+    <header class="sticky-top">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark-navy shadow-sm py-2 py-lg-3 border-bottom border-dark">
             <div class="container">
-                <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="/">
-                    <span class="badge bg-primary fs-6 px-2 py-1">SB</span>
-                    <span>SKILLBYTE</span>
+                <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-decoration-none" href="/">
+                    <div class="brand-logo-box bg-primary text-white rounded-3 d-flex align-items-center justify-content-center shadow-sm">
+                        <i class="bi bi-mortarboard-fill fs-5"></i>
+                    </div>
+                    <div class="d-flex flex-column">
+                        <span class="brand-text text-white tracking-tight lh-1">SKILL<span class="text-primary-accent">BYTE</span></span>
+                        <span class="brand-tagline text-muted small lh-1 mt-1 d-none d-sm-inline">Learning & Assessment</span>
+                    </div>
                 </a>
-                <span class="navbar-text text-muted small d-none d-md-inline">
-                    Where Theory Meets Practice
-                </span>
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMainCollapse" aria-controls="navbarMainCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMainCollapse" aria-controls="navbarMainCollapse" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
                 <div class="collapse navbar-collapse" id="navbarMainCollapse">
-                    <div class="ms-auto d-flex align-items-lg-center align-items-start gap-3 flex-column flex-lg-row pt-3 pt-lg-0">
+                    <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-1 pt-3 pt-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link px-3 text-white d-flex align-items-center gap-2 fw-medium" href="/coding/">
+                                <i class="bi bi-code-slash text-primary"></i>
+                                <span class="nav-link-text text-white">Practice Coding</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link px-3 text-white d-flex align-items-center gap-2 fw-medium" href="/assessments/mcq/">
+                                <i class="bi bi-ui-checks text-info"></i>
+                                <span class="nav-link-text text-white">MCQ Quizzes</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link px-3 text-white d-flex align-items-center gap-2 fw-medium" href="/leaderboard/">
+                                <i class="bi bi-trophy-fill text-warning"></i>
+                                <span class="nav-link-text text-white">Leaderboard</span>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="d-flex align-items-lg-center align-items-start gap-2 flex-column flex-lg-row pt-3 pt-lg-0">
+                        <!-- Theme Mode Switcher (Light / Dark / Mixed) -->
+                        <div class="dropdown" id="theme-switcher-wrapper">
+                            <button class="btn btn-outline-light btn-sm dropdown-toggle d-flex align-items-center gap-1 text-white border-secondary border-opacity-50 px-2 py-1" type="button" id="themeSelectBtn" data-bs-toggle="dropdown" aria-expanded="false" title="Switch Theme Mode">
+                                <i class="bi bi-sun-fill text-warning" id="current-theme-icon"></i>
+                                <span class="small ms-1 text-white fw-medium" id="current-theme-label">Light</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-secondary border-opacity-25" style="min-width: 170px;" aria-labelledby="themeSelectBtn">
+                                <li>
+                                    <button class="dropdown-item d-flex align-items-center gap-2 py-2 theme-item-light active fw-bold" type="button" onclick="ThemeManager.setTheme('light')">
+                                        <i class="bi bi-sun-fill text-warning"></i>
+                                        <span>Light (Default)</span>
+                                        <i class="bi bi-check2 ms-auto theme-check-light text-primary"></i>
+                                    </button>
+                                </li>
+                                <li>
+                                    <button class="dropdown-item d-flex align-items-center gap-2 py-2 theme-item-dark" type="button" onclick="ThemeManager.setTheme('dark')">
+                                        <i class="bi bi-moon-stars-fill text-info"></i>
+                                        <span>Dark</span>
+                                        <i class="bi bi-check2 ms-auto d-none theme-check-dark text-primary"></i>
+                                    </button>
+                                </li>
+                                <li>
+                                    <button class="dropdown-item d-flex align-items-center gap-2 py-2 theme-item-mixed" type="button" onclick="ThemeManager.setTheme('mixed')">
+                                        <i class="bi bi-circle-half text-primary"></i>
+                                        <span>Mixed (Dual-Tone)</span>
+                                        <i class="bi bi-check2 ms-auto d-none theme-check-mixed text-primary"></i>
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+
                         <div id="navbar-auth-links"></div>
                     </div>
                 </div>
@@ -46,17 +111,75 @@
     </header>
 
     <!-- Main Content -->
-    <main class="main-content py-5">
+    <main class="main-content flex-grow-1 {% block main_padding %}py-5{% endblock %}">
+        {% block full_content %}
         <div class="container">
             {% block content %}{% endblock %}
         </div>
+        {% endblock %}
     </main>
 
     <!-- Footer -->
-    <footer class="footer bg-dark-navy text-muted py-4 border-top border-secondary border-opacity-25 mt-auto">
-        <div class="container text-center small">
-            <p class="mb-1 text-light">&copy; 2026 <strong>SKILLBYTE</strong> — Hybrid Assessment Platform</p>
-            <p class="mb-0 text-muted">Theory MCQs & Live Coding Assessments &bull; Powered by Django, DRF & PostgreSQL</p>
+    <footer class="footer bg-dark-navy text-muted pt-5 pb-4 border-top border-dark mt-auto">
+        <div class="container">
+            <div class="row g-4 mb-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div class="brand-logo-box bg-primary text-white rounded-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 32px; height: 32px;">
+                            <i class="bi bi-mortarboard-fill"></i>
+                        </div>
+                        <span class="brand-text text-white fw-bold tracking-tight">SKILL<span class="text-primary-accent">BYTE</span></span>
+                    </div>
+                    <p class="text-secondary small mb-3">
+                        An interactive learning and skill assessment platform uniting theoretical CS concepts with live in-browser coding practice and verified mastery progression.
+                    </p>
+                    <div class="d-flex align-items-center gap-2 text-secondary small">
+                        <span class="badge bg-success-subtle text-success border border-success"><i class="bi bi-check-circle-fill me-1"></i>System Operational</span>
+                        <span class="text-muted">&bull; v1.0.0</span>
+                    </div>
+                </div>
+
+                <div class="col-lg-2 col-md-6 col-6">
+                    <h6 class="text-white fw-semibold mb-3 small text-uppercase tracking-wider">Coding Tracks</h6>
+                    <ul class="list-unstyled d-flex flex-column gap-2 small">
+                        <li><a href="/coding/" class="text-secondary text-decoration-none hover-white">Python 3</a></li>
+                        <li><a href="/coding/" class="text-secondary text-decoration-none hover-white">Java OOP</a></li>
+                        <li><a href="/coding/" class="text-secondary text-decoration-none hover-white">C++ High Perf</a></li>
+                        <li><a href="/coding/" class="text-secondary text-decoration-none hover-white">Data Structures</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-2 col-md-6 col-6">
+                    <h6 class="text-white fw-semibold mb-3 small text-uppercase tracking-wider">Theory & Aptitude</h6>
+                    <ul class="list-unstyled d-flex flex-column gap-2 small">
+                        <li><a href="/assessments/mcq/" class="text-secondary text-decoration-none hover-white">Quantitative Math</a></li>
+                        <li><a href="/assessments/mcq/" class="text-secondary text-decoration-none hover-white">Verbal English</a></li>
+                        <li><a href="/assessments/mcq/" class="text-secondary text-decoration-none hover-white">General Knowledge</a></li>
+                        <li><a href="/assessments/mcq/" class="text-secondary text-decoration-none hover-white">CS Fundamentals</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <h6 class="text-white fw-semibold mb-3 small text-uppercase tracking-wider">Platform Features</h6>
+                    <ul class="list-unstyled d-flex flex-column gap-2 small">
+                        <li class="text-secondary"><i class="bi bi-shield-check text-primary me-2"></i>Monaco VS Code In-Browser IDE</li>
+                        <li class="text-secondary"><i class="bi bi-shield-check text-primary me-2"></i>Anti-Farming Deduplicated Scoring</li>
+                        <li class="text-secondary"><i class="bi bi-shield-check text-primary me-2"></i>Dynamic Skill Tiers (Novice to Master)</li>
+                        <li class="text-secondary"><i class="bi bi-shield-check text-primary me-2"></i>Real-Time Automated Compiler Telemetry</li>
+                    </ul>
+                </div>
+            </div>
+
+            <hr class="border-secondary border-opacity-25 my-4">
+
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 text-muted small">
+                <span>&copy; 2026 <strong>SKILLBYTE</strong>. Designed for technical students, developers, and educators.</span>
+                <div class="d-flex align-items-center gap-3">
+                    <a href="/leaderboard/" class="text-secondary text-decoration-none hover-white">Leaderboard</a>
+                    <a href="/dashboard/" class="text-secondary text-decoration-none hover-white">Dashboard</a>
+                    <a href="/login/" class="text-secondary text-decoration-none hover-white">Sign In</a>
+                </div>
+            </div>
         </div>
     </footer>
 
